@@ -38,8 +38,13 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     
     @Override
     public void init(final Properties props) {
-        specialChars = createSpecialChars(props);
-        replaceChar = createReplaceChar(props);
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, SPECIAL_CHARS, getType());
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
+        specialChars = props.getProperty(SPECIAL_CHARS);
+        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(specialChars, SPECIAL_CHARS, getType());
+        String replaceCharStr = props.getProperty(REPLACE_CHAR);
+        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(replaceCharStr, REPLACE_CHAR, getType());
+        replaceChar = replaceCharStr.charAt(0);
     }
     
     private String createSpecialChars(final Properties props) {
@@ -69,5 +74,13 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     @Override
     public String getType() {
         return "MASK_BEFORE_SPECIAL_CHARS";
+    }
+
+    public String getSpecialChars() {
+        return specialChars;
+    }
+
+    public char getReplaceChar() {
+        return replaceChar;
     }
 }

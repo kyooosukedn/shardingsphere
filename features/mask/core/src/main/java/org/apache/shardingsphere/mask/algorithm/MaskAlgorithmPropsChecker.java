@@ -81,4 +81,32 @@ public final class MaskAlgorithmPropsChecker {
             throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", integerTypeConfigKey));
         }
     }
+
+    /**
+     * Check non-empty string type config.
+     *
+     * @param nonEmptyStringConfigValue non-empty string config value
+     * @param nonEmptyStringConfigKey non-empty string config key
+     * @param maskType mask type
+     * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
+     */
+    public static void checkNonEmptyStringConfig(final String nonEmptyStringConfigValue, final String nonEmptyStringConfigKey, final String maskType) {
+        if (nonEmptyStringConfigValue.isEmpty()) {
+            throw new MaskAlgorithmInitializationException(maskType, String.format("%s can not be empty", nonEmptyStringConfigKey));
+        }
+    }
+
+    /**
+     * Check required property config.
+     *
+     * @param props props
+     * @param requiredPropertyConfigKey required property config key
+     * @param maskType mask type
+     * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
+     */
+    public static void checkRequiredPropertyConfig(final Properties props, final String requiredPropertyConfigKey, final String maskType) {
+        if (!props.containsKey(requiredPropertyConfigKey)) {
+            throw new MaskAlgorithmInitializationException(maskType, String.format("%s is required", requiredPropertyConfigKey));
+        }
+    }
 }
