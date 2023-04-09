@@ -64,4 +64,16 @@ class KeepFirstNLastMMaskAlgorithmTest {
         assertThrows(MaskAlgorithmInitializationException.class,
                 () -> new KeepFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "2"), new Property("last-m", "5"), new Property("replace-char", ""))));
     }
+
+    @Test
+    void assertInitWhenFirstNIsNotPositive() {
+        assertThrows(MaskAlgorithmInitializationException.class,
+                () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "-3"), new Property("last-m", "5"), new Property("replace-char", "*"))));
+    }
+
+    @Test
+    void assertInitWhenLastMIsNotPositive() {
+        assertThrows(MaskAlgorithmInitializationException.class,
+                () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "3"), new Property("last-m", "-5"), new Property("replace-char", "*"))));
+    }
 }
