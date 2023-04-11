@@ -81,7 +81,7 @@ public final class MaskAlgorithmPropsChecker {
             throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", integerTypeConfigKey));
         }
     }
-
+    
     /**
      * Check non-empty string type config.
      *
@@ -95,7 +95,7 @@ public final class MaskAlgorithmPropsChecker {
             throw new MaskAlgorithmInitializationException(maskType, String.format("%s can not be empty", nonEmptyStringConfigKey));
         }
     }
-
+    
     /**
      * Check required property config.
      *

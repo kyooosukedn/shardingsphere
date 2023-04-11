@@ -38,23 +38,24 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     
     @Override
     public void init(final Properties props) {
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, SPECIAL_CHARS, getType());
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
-        specialChars = props.getProperty(SPECIAL_CHARS);
-        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(specialChars, SPECIAL_CHARS, getType());
-        String replaceCharStr = props.getProperty(REPLACE_CHAR);
-        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(replaceCharStr, REPLACE_CHAR, getType());
-        replaceChar = replaceCharStr.charAt(0);
+        specialChars = createSpecialChars(props);
+        replaceChar = createReplaceChar(props);
     }
     
     private String createSpecialChars(final Properties props) {
+        String specialChars = props.getProperty(SPECIAL_CHARS);
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, SPECIAL_CHARS, getType());
+        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(specialChars, SPECIAL_CHARS, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, SPECIAL_CHARS, getType());
-        return props.getProperty(SPECIAL_CHARS);
+        return specialChars;
     }
     
     private Character createReplaceChar(final Properties props) {
+        String replaceCharStr = props.getProperty(REPLACE_CHAR);
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
+        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(replaceCharStr, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
-        return props.getProperty(REPLACE_CHAR).charAt(0);
+        return replaceCharStr.charAt(0);
     }
     
     @Override
@@ -75,11 +76,11 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     public String getType() {
         return "MASK_BEFORE_SPECIAL_CHARS";
     }
-
+    
     public String getSpecialChars() {
         return specialChars;
     }
-
+    
     public char getReplaceChar() {
         return replaceChar;
     }
