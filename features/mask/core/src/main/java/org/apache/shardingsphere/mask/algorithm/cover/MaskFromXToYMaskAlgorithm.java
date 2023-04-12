@@ -18,7 +18,9 @@
 package org.apache.shardingsphere.mask.algorithm.cover;
 
 import com.google.common.base.Strings;
+import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.mask.algorithm.MaskAlgorithmPropsChecker;
+import org.apache.shardingsphere.mask.exception.algorithm.MaskAlgorithmInitializationException;
 import org.apache.shardingsphere.mask.spi.MaskAlgorithm;
 
 import java.util.Properties;
@@ -49,17 +51,30 @@ public final class MaskFromXToYMaskAlgorithm implements MaskAlgorithm<Object, St
     
     private Integer createFromX(final Properties props) {
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, FROM_X, getType());
-        return Integer.parseInt(props.getProperty(FROM_X));
+        String fromXValue = props.getProperty(FROM_X);
+        if (!Strings.isNullOrEmpty(fromXValue)) {
+            fromX = Integer.parseInt(fromXValue);
+            ShardingSpherePreconditions.checkState(fromX > 0, () -> new MaskAlgorithmInitializationException(getType(), "from-X must be a positive integer."));
+        }
+        return fromX;
     }
     
     private Integer createToY(final Properties props) {
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, TO_Y, getType());
-        return Integer.parseInt(props.getProperty(TO_Y));
+        String toYValue = props.getProperty(TO_Y);
+        if (!Strings.isNullOrEmpty(toYValue)) {
+            toY = Integer.parseInt(toYValue);
+            ShardingSpherePreconditions.checkState(toY > 0, () -> new MaskAlgorithmInitializationException(getType(), "to-Y must be a positive integer."));
+        }
+        return toY;
     }
     
     private Character createReplaceChar(final Properties props) {
+        String replaceCharStr = props.getProperty(REPLACE_CHAR);
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
+        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(replaceCharStr, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
-        return props.getProperty(REPLACE_CHAR).charAt(0);
+        return replaceCharStr.charAt(0);
     }
     
     @Override

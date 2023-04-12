@@ -48,7 +48,7 @@ public final class KeepFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
         lastM = createLastM(props);
         replaceChar = createReplaceChar(props);
     }
-
+    
     private Integer createFirstN(final Properties props) {
         int firstN = 0;
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, FIRST_N, getType());
@@ -59,7 +59,7 @@ public final class KeepFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
         }
         return firstN;
     }
-
+    
     private Integer createLastM(final Properties props) {
         int lastM = 0;
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, LAST_M, getType());
@@ -70,7 +70,7 @@ public final class KeepFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
         }
         return lastM;
     }
-
+    
     private Character createReplaceChar(final Properties props) {
         String replaceCharStr = props.getProperty(REPLACE_CHAR);
         MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
