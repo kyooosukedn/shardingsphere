@@ -41,7 +41,7 @@ public final class MaskAfterSpecialCharsAlgorithm implements MaskAlgorithm<Objec
         specialChars = createSpecialChars(props);
         replaceChar = createReplaceChar(props);
     }
-
+    
     private String createSpecialChars(final Properties props) {
         String specialChars = props.getProperty(SPECIAL_CHARS);
         MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, SPECIAL_CHARS, getType());
@@ -49,7 +49,7 @@ public final class MaskAfterSpecialCharsAlgorithm implements MaskAlgorithm<Objec
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, SPECIAL_CHARS, getType());
         return specialChars;
     }
-
+    
     private Character createReplaceChar(final Properties props) {
         String replaceCharStr = props.getProperty(REPLACE_CHAR);
         MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
