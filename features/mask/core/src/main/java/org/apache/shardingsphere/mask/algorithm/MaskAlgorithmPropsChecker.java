@@ -29,7 +29,7 @@ import java.util.Properties;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MaskAlgorithmPropsChecker {
-
+    
     /**
      * Check single char config.
      *
