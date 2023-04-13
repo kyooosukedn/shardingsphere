@@ -60,16 +60,19 @@ public final class UnifiedCreditCodeRandomReplaceAlgorithm implements MaskAlgori
     }
     
     private List<Character> createRegistrationDepartmentCodes(final Properties props) {
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REGISTRATION_DEPARTMENT_CODES, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, REGISTRATION_DEPARTMENT_CODES, getType());
         return Splitter.on(",").trimResults().splitToList(props.getProperty(REGISTRATION_DEPARTMENT_CODES)).stream().map(each -> each.charAt(0)).collect(Collectors.toList());
     }
     
     private List<Character> createCategoryCodes(final Properties props) {
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, CATEGORY_CODES, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, CATEGORY_CODES, getType());
         return Splitter.on(",").trimResults().splitToList(props.getProperty(CATEGORY_CODES)).stream().map(each -> each.charAt(0)).collect(Collectors.toList());
     }
     
     private List<String> createAdministrativeDivisionCodes(final Properties props) {
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, ADMINISTRATIVE_DIVISION_CODES, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, ADMINISTRATIVE_DIVISION_CODES, getType());
         return Splitter.on(",").trimResults().splitToList(props.getProperty(ADMINISTRATIVE_DIVISION_CODES));
     }

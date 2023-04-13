@@ -74,7 +74,6 @@ public final class MaskFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
     private Character createReplaceChar(final Properties props) {
         String replaceCharStr = props.getProperty(REPLACE_CHAR);
         MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
-        MaskAlgorithmPropsChecker.checkNonEmptyStringConfig(replaceCharStr, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
         return replaceCharStr.charAt(0);
     }

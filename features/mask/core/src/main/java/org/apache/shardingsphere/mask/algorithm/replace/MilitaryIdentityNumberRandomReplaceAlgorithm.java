@@ -45,6 +45,7 @@ public final class MilitaryIdentityNumberRandomReplaceAlgorithm implements MaskA
     }
     
     private List<Character> createTypeCodes(final Properties props) {
+        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, TYPE_CODE, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, TYPE_CODE, getType());
         return Splitter.on(",").trimResults().splitToList(props.getProperty(TYPE_CODE)).stream().map(each -> each.charAt(0)).collect(Collectors.toList());
     }
