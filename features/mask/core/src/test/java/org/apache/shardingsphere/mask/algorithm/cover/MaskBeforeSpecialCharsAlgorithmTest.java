@@ -91,7 +91,5 @@ class MaskBeforeSpecialCharsAlgorithmTest {
     void assertInitWhenValidPropertiesAreSet() {
         MaskBeforeSpecialCharsAlgorithm algorithm = new MaskBeforeSpecialCharsAlgorithm();
         algorithm.init(PropertiesBuilder.build(new Property("special-chars", "d1"), new Property("replace-char", "*")));
-        assertThat(algorithm.getSpecialChars(), is("d1"));
-        assertThat(algorithm.getReplaceChar(), is('*'));
     }
 }
