@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.LineProcessor;
 import lombok.SneakyThrows;
+import org.apache.shardingsphere.mask.algorithm.MaskAlgorithmPropsChecker;
 import org.apache.shardingsphere.mask.exception.algorithm.MaskAlgorithmInitializationException;
 import org.apache.shardingsphere.mask.spi.MaskAlgorithm;
 
@@ -39,7 +40,7 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class TelephoneRandomReplaceAlgorithm implements MaskAlgorithm<Object, String> {
-    
+
     private static final String NETWORK_NUMBERS = "network-numbers";
     
     private final Random random = new SecureRandom();
@@ -52,7 +53,8 @@ public final class TelephoneRandomReplaceAlgorithm implements MaskAlgorithm<Obje
     }
     
     private List<String> createNetworkNumbers(final Properties props) {
-        String networkNumbers = props.containsKey(NETWORK_NUMBERS) && !Strings.isNullOrEmpty(props.getProperty(NETWORK_NUMBERS)) ? props.getProperty(NETWORK_NUMBERS) : initDefaultNetworkNumbers();
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, NETWORK_NUMBERS, getType());
+        String networkNumbers = props.getProperty(NETWORK_NUMBERS, initDefaultNetworkNumbers());
         return Splitter.on(",").trimResults().splitToList(networkNumbers).stream().map(this::getNetworkNumber).distinct().collect(Collectors.toList());
     }
     

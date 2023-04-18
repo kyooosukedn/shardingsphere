@@ -50,32 +50,21 @@ public final class KeepFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
     }
     
     private Integer createFirstN(final Properties props) {
-        int firstN = 0;
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, FIRST_N, getType());
-        String firstNValue = props.getProperty(FIRST_N);
-        if (!Strings.isNullOrEmpty(firstNValue)) {
-            firstN = Integer.parseInt(firstNValue);
-            ShardingSpherePreconditions.checkState(firstN > 0, () -> new MaskAlgorithmInitializationException(getType(), "first-n must be a positive integer."));
-        }
-        return firstN;
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FIRST_N, getType());
+        return Integer.parseInt(props.getProperty(FIRST_N));
     }
     
     private Integer createLastM(final Properties props) {
-        int lastM = 0;
         MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, LAST_M, getType());
-        String lastMValue = props.getProperty(LAST_M);
-        if (!Strings.isNullOrEmpty(lastMValue)) {
-            lastM = Integer.parseInt(lastMValue);
-            ShardingSpherePreconditions.checkState(lastM > 0, () -> new MaskAlgorithmInitializationException(getType(), "first-n must be a positive integer."));
-        }
-        return lastM;
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, LAST_M, getType());
+        return Integer.parseInt(props.getProperty(LAST_M));
     }
     
     private Character createReplaceChar(final Properties props) {
-        String replaceCharStr = props.getProperty(REPLACE_CHAR);
         MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
-        return replaceCharStr.charAt(0);
+        return props.getProperty(REPLACE_CHAR).charAt(0);
     }
     
     @Override
