@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * Telephone random replace algorithm.
  */
 public final class TelephoneRandomReplaceAlgorithm implements MaskAlgorithm<Object, String> {
-
+    
     private static final String NETWORK_NUMBERS = "network-numbers";
     
     private final Random random = new SecureRandom();
