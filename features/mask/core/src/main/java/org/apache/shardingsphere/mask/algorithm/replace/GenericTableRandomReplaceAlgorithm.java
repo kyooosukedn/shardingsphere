@@ -61,11 +61,8 @@ public final class GenericTableRandomReplaceAlgorithm implements MaskAlgorithm<O
     
     @Override
     public void init(final Properties props) {
-        MaskAlgorithmPropsChecker.checkPropertyValueContainsOnlyUppercaseLetters(props, UPPERCASE_LETTER_CODES, DEFAULT_UPPERCASE_LETTER_CODES, getType());
         uppercaseLetterCodes = splitPropsToList(props.getProperty(UPPERCASE_LETTER_CODES, DEFAULT_UPPERCASE_LETTER_CODES));
-        MaskAlgorithmPropsChecker.checkPropertyValueContainsOnlyLowercaseLetters(props, LOWERCASE_LETTER_CODES, DEFAULT_LOWERCASE_LETTER_CODES, getType());
         lowercaseLetterCodes = splitPropsToList(props.getProperty(LOWERCASE_LETTER_CODES, DEFAULT_LOWERCASE_LETTER_CODES));
-        MaskAlgorithmPropsChecker.checkPropertyValueContainsOnlyDigits(props, DIGITAL_CODES, getType());
         digitalCodes = splitPropsToList(props.getProperty(DIGITAL_CODES, DEFAULT_DIGITAL_CODES));
         specialCodes = splitPropsToList(props.getProperty(SPECIAL_CODES, DEFAULT_SPECIAL_CODES));
     }

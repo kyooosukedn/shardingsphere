@@ -75,5 +75,5 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     public String getType() {
         return "MASK_BEFORE_SPECIAL_CHARS";
     }
-
+    
 }
