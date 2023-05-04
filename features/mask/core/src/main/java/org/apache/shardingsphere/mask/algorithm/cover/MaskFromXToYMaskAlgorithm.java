@@ -50,17 +50,12 @@ public final class MaskFromXToYMaskAlgorithm implements MaskAlgorithm<Object, St
     }
     
     private Integer createFromX(final Properties props) {
-        MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, FROM_X, getType());
-        String fromXValue = props.getProperty(FROM_X);
-        if (!Strings.isNullOrEmpty(fromXValue)) {
-            fromX = Integer.parseInt(fromXValue);
-            ShardingSpherePreconditions.checkState(fromX > 0, () -> new MaskAlgorithmInitializationException(getType(), "from-X must be a positive integer."));
-        }
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FROM_X, getType());
         return fromX;
     }
     
     private Integer createToY(final Properties props) {
-        MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, TO_Y, getType());
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, TO_Y, getType());
         String toYValue = props.getProperty(TO_Y);
         if (!Strings.isNullOrEmpty(toYValue)) {
             toY = Integer.parseInt(toYValue);

@@ -18,9 +18,7 @@
 package org.apache.shardingsphere.mask.algorithm.cover;
 
 import com.google.common.base.Strings;
-import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.mask.algorithm.MaskAlgorithmPropsChecker;
-import org.apache.shardingsphere.mask.exception.algorithm.MaskAlgorithmInitializationException;
 import org.apache.shardingsphere.mask.spi.MaskAlgorithm;
 
 import java.util.Properties;
@@ -50,24 +48,12 @@ public final class MaskFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
     }
     
     private Integer createFirstN(final Properties props) {
-        int firstN = 0;
-        MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, FIRST_N, getType());
-        String firstNValue = props.getProperty(FIRST_N);
-        if (!Strings.isNullOrEmpty(firstNValue)) {
-            firstN = Integer.parseInt(firstNValue);
-            ShardingSpherePreconditions.checkState(firstN > 0, () -> new MaskAlgorithmInitializationException(getType(), "first-n must be a positive integer."));
-        }
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FIRST_N, getType());
         return firstN;
     }
     
     private Integer createLastM(final Properties props) {
-        int lastM = 0;
-        MaskAlgorithmPropsChecker.checkIntegerTypeConfig(props, LAST_M, getType());
-        String lastMValue = props.getProperty(LAST_M);
-        if (!Strings.isNullOrEmpty(lastMValue)) {
-            lastM = Integer.parseInt(lastMValue);
-            ShardingSpherePreconditions.checkState(lastM > 0, () -> new MaskAlgorithmInitializationException(getType(), "first-n must be a positive integer."));
-        }
+        MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, LAST_M, getType());
         return lastM;
     }
     
