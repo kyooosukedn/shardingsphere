@@ -62,24 +62,6 @@ public final class MaskAlgorithmPropsChecker {
     }
     
     /**
-     * Check integer type config.
-     *
-     * @param props props
-     * @param integerTypeConfigKey integer type config key
-     * @param maskType mask type
-     * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
-     */
-    public static void checkIntegerTypeConfig(final Properties props, final String integerTypeConfigKey, final String maskType) {
-        ShardingSpherePreconditions.checkState(props.containsKey(integerTypeConfigKey),
-                () -> new MaskAlgorithmInitializationException(maskType, String.format("%s can not be null", integerTypeConfigKey)));
-        try {
-            Integer.parseInt(props.getProperty(integerTypeConfigKey));
-        } catch (final NumberFormatException ex) {
-            throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", integerTypeConfigKey));
-        }
-    }
-    
-    /**
      * Check required property config.
      *
      * @param props props
@@ -101,6 +83,14 @@ public final class MaskAlgorithmPropsChecker {
      * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
      */
     public static void checkPositiveIntegerConfig(final Properties props, final String positiveIntegerTypeConfigKey, final String maskType) {
+        ShardingSpherePreconditions.checkState(props.containsKey(positiveIntegerTypeConfigKey),
+                () -> new MaskAlgorithmInitializationException(maskType, String.format("%s can not be null", positiveIntegerTypeConfigKey)));
+        try {
+            Integer.parseInt(props.getProperty(positiveIntegerTypeConfigKey));
+        } catch (final NumberFormatException ex) {
+            throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", positiveIntegerTypeConfigKey));
+        }
+        
         if (!Strings.isNullOrEmpty(positiveIntegerTypeConfigKey)) {
             int integerValue = Integer.parseInt(props.getProperty(positiveIntegerTypeConfigKey));
             ShardingSpherePreconditions.checkState(integerValue > 0,
