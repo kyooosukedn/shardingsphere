@@ -117,7 +117,7 @@ public final class WALEventConverter {
         // TODO Unique key may be a column within unique index
         List<String> primaryKeyColumns = tableMetaData.getPrimaryKeyColumns();
         for (int i = 0; i < event.getPrimaryKeys().size(); i++) {
-            result.addColumn(new Column(primaryKeyColumns.get(i), event.getPrimaryKeys().get(i), true, true));
+            result.addColumn(new Column(primaryKeyColumns.get(i), event.getPrimaryKeys().get(i), null, true, true));
         }
         return result;
     }
@@ -143,7 +143,7 @@ public final class WALEventConverter {
         }
     }
     
-    boolean isColumnUnneeded(final Set<ColumnName> columnNameSet, final String columnName) {
+    private boolean isColumnUnneeded(final Set<ColumnName> columnNameSet, final String columnName) {
         return null != columnNameSet && !columnNameSet.contains(new ColumnName(columnName));
     }
 }

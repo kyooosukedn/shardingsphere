@@ -19,13 +19,13 @@ package org.apache.shardingsphere.encrypt.rewrite.parameter.rewriter;
 
 import com.google.common.base.Preconditions;
 import lombok.Setter;
-import org.apache.shardingsphere.encrypt.spi.LikeEncryptAlgorithm;
-import org.apache.shardingsphere.encrypt.spi.EncryptAlgorithm;
+import org.apache.shardingsphere.encrypt.api.context.EncryptContext;
 import org.apache.shardingsphere.encrypt.context.EncryptContextBuilder;
 import org.apache.shardingsphere.encrypt.rewrite.aware.DatabaseNameAware;
 import org.apache.shardingsphere.encrypt.rewrite.aware.EncryptRuleAware;
 import org.apache.shardingsphere.encrypt.rule.EncryptRule;
-import org.apache.shardingsphere.encrypt.api.context.EncryptContext;
+import org.apache.shardingsphere.encrypt.spi.EncryptAlgorithm;
+import org.apache.shardingsphere.encrypt.spi.LikeEncryptAlgorithm;
 import org.apache.shardingsphere.infra.binder.segment.insert.values.OnDuplicateUpdateContext;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.binder.statement.dml.InsertStatementContext;
@@ -66,33 +66,18 @@ public final class EncryptInsertOnDuplicateKeyUpdateValueParameterRewriter imple
         String schemaName = insertStatementContext.getTablesContext().getSchemaName().orElseGet(() -> DatabaseTypeEngine.getDefaultSchemaName(insertStatementContext.getDatabaseType(), databaseName));
         for (int index = 0; index < onDuplicateKeyUpdateValueContext.getValueExpressions().size(); index++) {
             String encryptLogicColumnName = onDuplicateKeyUpdateValueContext.getColumn(index).getIdentifier().getValue();
-            EncryptContext encryptContext = EncryptContextBuilder.build(databaseName, schemaName, tableName, encryptLogicColumnName);
             Optional<EncryptAlgorithm> encryptor = encryptRule.findEncryptor(tableName, encryptLogicColumnName);
             if (!encryptor.isPresent()) {
                 continue;
             }
-            Object plainColumnValue = onDuplicateKeyUpdateValueContext.getValue(index);
-            if (plainColumnValue instanceof FunctionSegment && "VALUES".equalsIgnoreCase(((FunctionSegment) plainColumnValue).getFunctionName())) {
+            Object plainValue = onDuplicateKeyUpdateValueContext.getValue(index);
+            if (plainValue instanceof FunctionSegment && "VALUES".equalsIgnoreCase(((FunctionSegment) plainValue).getFunctionName())) {
                 return;
             }
-            Object cipherColumnValue = encryptor.get().encrypt(plainColumnValue, encryptContext);
+            EncryptContext encryptContext = EncryptContextBuilder.build(databaseName, schemaName, tableName, encryptLogicColumnName);
+            Object cipherColumnValue = encryptor.get().encrypt(plainValue, encryptContext);
             groupedParamBuilder.getGenericParameterBuilder().addReplacedParameters(index, cipherColumnValue);
-            Collection<Object> addedParams = new LinkedList<>();
-            Optional<EncryptAlgorithm> assistedQueryEncryptor = encryptRule.findAssistedQueryEncryptor(tableName, encryptLogicColumnName);
-            if (assistedQueryEncryptor.isPresent()) {
-                Optional<String> assistedColumnName = encryptRule.findAssistedQueryColumn(tableName, encryptLogicColumnName);
-                Preconditions.checkArgument(assistedColumnName.isPresent(), "Can not find assisted query Column Name");
-                addedParams.add(assistedQueryEncryptor.get().encrypt(plainColumnValue, encryptContext));
-            }
-            Optional<LikeEncryptAlgorithm> likeQueryEncryptor = encryptRule.findLikeQueryEncryptor(tableName, encryptLogicColumnName);
-            if (likeQueryEncryptor.isPresent()) {
-                Optional<String> likeColumnName = encryptRule.findLikeQueryColumn(tableName, encryptLogicColumnName);
-                Preconditions.checkArgument(likeColumnName.isPresent(), "Can not find assisted query Column Name");
-                addedParams.add(likeQueryEncryptor.get().encrypt(plainColumnValue, encryptContext));
-            }
-            if (encryptRule.findPlainColumn(tableName, encryptLogicColumnName).isPresent()) {
-                addedParams.add(plainColumnValue);
-            }
+            Collection<Object> addedParams = buildAddedParams(tableName, encryptLogicColumnName, plainValue, encryptContext);
             if (!addedParams.isEmpty()) {
                 if (!groupedParamBuilder.getGenericParameterBuilder().getAddedIndexAndParameters().containsKey(index)) {
                     groupedParamBuilder.getGenericParameterBuilder().getAddedIndexAndParameters().put(index, new LinkedList<>());
@@ -100,5 +85,23 @@ public final class EncryptInsertOnDuplicateKeyUpdateValueParameterRewriter imple
                 groupedParamBuilder.getGenericParameterBuilder().getAddedIndexAndParameters().get(index).addAll(addedParams);
             }
         }
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Collection<Object> buildAddedParams(final String tableName, final String logicColumnName, final Object plainValue, final EncryptContext encryptContext) {
+        Collection<Object> result = new LinkedList<>();
+        Optional<EncryptAlgorithm> assistedQueryEncryptor = encryptRule.findAssistedQueryEncryptor(tableName, logicColumnName);
+        if (assistedQueryEncryptor.isPresent()) {
+            Optional<String> assistedColumnName = encryptRule.findAssistedQueryColumn(tableName, logicColumnName);
+            Preconditions.checkArgument(assistedColumnName.isPresent(), "Can not find assisted query Column Name");
+            result.add(assistedQueryEncryptor.get().encrypt(plainValue, encryptContext));
+        }
+        Optional<LikeEncryptAlgorithm> likeQueryEncryptor = encryptRule.findLikeQueryEncryptor(tableName, logicColumnName);
+        if (likeQueryEncryptor.isPresent()) {
+            Optional<String> likeColumnName = encryptRule.findLikeQueryColumn(tableName, logicColumnName);
+            Preconditions.checkArgument(likeColumnName.isPresent(), "Can not find assisted query Column Name");
+            result.add(likeQueryEncryptor.get().encrypt(plainValue, encryptContext));
+        }
+        return result;
     }
 }

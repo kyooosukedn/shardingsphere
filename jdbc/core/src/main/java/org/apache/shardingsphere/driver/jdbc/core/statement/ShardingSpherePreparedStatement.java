@@ -43,7 +43,7 @@ import org.apache.shardingsphere.infra.binder.statement.dml.InsertStatementConte
 import org.apache.shardingsphere.infra.binder.statement.dml.SelectStatementContext;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
-import org.apache.shardingsphere.infra.context.kernel.KernelProcessor;
+import org.apache.shardingsphere.infra.connection.kernel.KernelProcessor;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.database.type.dialect.MySQLDatabaseType;
@@ -599,7 +599,7 @@ public final class ShardingSpherePreparedStatement extends AbstractPreparedState
         }
         SQLParserRule sqlParserRule = metaDataContexts.getMetaData().getGlobalRuleMetaData().getSingleRule(SQLParserRule.class);
         HintValueContext hintValueContext = sqlParserRule.isSqlCommentParseEnabled() ? new HintValueContext() : SQLHintUtils.extractHint(sql);
-        return new QueryContext(sqlStatementContext, sql, params, hintValueContext);
+        return new QueryContext(sqlStatementContext, sql, params, hintValueContext, true);
     }
     
     private MergedResult mergeQuery(final List<QueryResult> queryResults) throws SQLException {

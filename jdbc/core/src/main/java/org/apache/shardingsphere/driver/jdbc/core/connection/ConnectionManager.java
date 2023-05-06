@@ -25,19 +25,19 @@ import lombok.Getter;
 import org.apache.shardingsphere.driver.jdbc.adapter.executor.ForceExecuteTemplate;
 import org.apache.shardingsphere.driver.jdbc.adapter.invocation.MethodInvocationRecorder;
 import org.apache.shardingsphere.driver.jdbc.core.ShardingSphereSavepoint;
-import org.apache.shardingsphere.infra.context.ConnectionContext;
-import org.apache.shardingsphere.infra.context.transaction.TransactionConnectionContext;
-import org.apache.shardingsphere.infra.exception.OverallConnectionNotEnoughException;
+import org.apache.shardingsphere.infra.connection.ConnectionContext;
+import org.apache.shardingsphere.infra.connection.transaction.TransactionConnectionContext;
 import org.apache.shardingsphere.infra.datasource.pool.creator.DataSourcePoolCreator;
 import org.apache.shardingsphere.infra.datasource.props.DataSourceProperties;
+import org.apache.shardingsphere.infra.exception.OverallConnectionNotEnoughException;
 import org.apache.shardingsphere.infra.executor.sql.execute.engine.ConnectionMode;
 import org.apache.shardingsphere.infra.executor.sql.prepare.driver.jdbc.ExecutorJDBCConnectionManager;
 import org.apache.shardingsphere.infra.instance.metadata.InstanceMetaData;
 import org.apache.shardingsphere.infra.instance.metadata.InstanceType;
 import org.apache.shardingsphere.infra.instance.metadata.proxy.ProxyInstanceMetaData;
 import org.apache.shardingsphere.infra.metadata.user.ShardingSphereUser;
+import org.apache.shardingsphere.metadata.persist.MetaDataBasedPersistService;
 import org.apache.shardingsphere.mode.manager.ContextManager;
-import org.apache.shardingsphere.metadata.persist.MetaDataPersistService;
 import org.apache.shardingsphere.traffic.rule.TrafficRule;
 import org.apache.shardingsphere.transaction.ConnectionSavepointManager;
 import org.apache.shardingsphere.transaction.ConnectionTransaction;
@@ -95,7 +95,7 @@ public final class ConnectionManager implements ExecutorJDBCConnectionManager, A
         if (rule.getStrategyRules().isEmpty()) {
             return Collections.emptyMap();
         }
-        MetaDataPersistService persistService = contextManager.getMetaDataContexts().getPersistService();
+        MetaDataBasedPersistService persistService = contextManager.getMetaDataContexts().getPersistService();
         String actualDatabaseName = contextManager.getMetaDataContexts().getMetaData().getActualDatabaseName(databaseName);
         Map<String, DataSourceProperties> dataSourcePropsMap = persistService.getDataSourceService().load(actualDatabaseName);
         Preconditions.checkState(!dataSourcePropsMap.isEmpty(), "Can not get data source properties from meta data.");
@@ -127,7 +127,7 @@ public final class ConnectionManager implements ExecutorJDBCConnectionManager, A
     private String createJdbcUrl(final ProxyInstanceMetaData instanceMetaData, final String schema, final Map<String, Object> props) {
         String jdbcUrl = String.valueOf(props.get("jdbcUrl"));
         String jdbcUrlPrefix = jdbcUrl.substring(0, jdbcUrl.indexOf("//"));
-        String jdbcUrlSuffix = jdbcUrl.contains("?") ? jdbcUrl.substring(jdbcUrl.indexOf("?")) : "";
+        String jdbcUrlSuffix = jdbcUrl.contains("?") ? jdbcUrl.substring(jdbcUrl.indexOf('?')) : "";
         return String.format("%s//%s:%s/%s%s", jdbcUrlPrefix, instanceMetaData.getIp(), instanceMetaData.getPort(), schema, jdbcUrlSuffix);
     }
     
@@ -303,7 +303,7 @@ public final class ConnectionManager implements ExecutorJDBCConnectionManager, A
     @Override
     public List<Connection> getConnections(final String dataSourceName, final int connectionSize, final ConnectionMode connectionMode) throws SQLException {
         DataSource dataSource = dataSourceMap.get(dataSourceName);
-        Preconditions.checkState(null != dataSource, "Missing the data source name: '%s'", dataSourceName);
+        Preconditions.checkNotNull(dataSource, "Missing the data source name: '%s'", dataSourceName);
         Collection<Connection> connections;
         synchronized (cachedConnections) {
             connections = cachedConnections.get(dataSourceName);
@@ -311,18 +311,18 @@ public final class ConnectionManager implements ExecutorJDBCConnectionManager, A
         List<Connection> result;
         if (connections.size() >= connectionSize) {
             result = new ArrayList<>(connections).subList(0, connectionSize);
-        } else if (!connections.isEmpty()) {
+        } else if (connections.isEmpty()) {
+            result = new ArrayList<>(createConnections(dataSourceName, dataSource, connectionSize, connectionMode));
+            synchronized (cachedConnections) {
+                cachedConnections.putAll(dataSourceName, result);
+            }
+        } else {
             result = new ArrayList<>(connectionSize);
             result.addAll(connections);
             List<Connection> newConnections = createConnections(dataSourceName, dataSource, connectionSize - connections.size(), connectionMode);
             result.addAll(newConnections);
             synchronized (cachedConnections) {
                 cachedConnections.putAll(dataSourceName, newConnections);
-            }
-        } else {
-            result = new ArrayList<>(createConnections(dataSourceName, dataSource, connectionSize, connectionMode));
-            synchronized (cachedConnections) {
-                cachedConnections.putAll(dataSourceName, result);
             }
         }
         return result;
@@ -351,7 +351,7 @@ public final class ConnectionManager implements ExecutorJDBCConnectionManager, A
                 Connection connection = createConnection(dataSourceName, dataSource, transactionConnectionContext);
                 methodInvocationRecorder.replay(connection);
                 result.add(connection);
-            } catch (final SQLException ex) {
+            } catch (final SQLException ignored) {
                 for (Connection each : result) {
                     each.close();
                 }

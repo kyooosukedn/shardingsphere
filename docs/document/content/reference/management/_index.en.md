@@ -47,8 +47,8 @@ namespace
    ├    ├     ├──worker_id
    ├    ├     ├     ├──UUID
    ├    ├     ├     ├──....
-   ├    ├     ├──process_trigger
-   ├    ├     ├     ├──process_list_id:UUID
+   ├    ├     ├──show_process_list_trigger
+   ├    ├     ├     ├──process_id:UUID
    ├    ├     ├     ├──....
    ├    ├     ├──labels                      
    ├    ├     ├     ├──UUID

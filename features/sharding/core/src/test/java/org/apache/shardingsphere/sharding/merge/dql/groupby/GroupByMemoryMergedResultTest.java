@@ -19,7 +19,7 @@ package org.apache.shardingsphere.sharding.merge.dql.groupby;
 
 import org.apache.shardingsphere.infra.binder.statement.dml.SelectStatementContext;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
-import org.apache.shardingsphere.infra.context.ConnectionContext;
+import org.apache.shardingsphere.infra.connection.ConnectionContext;
 import org.apache.shardingsphere.infra.database.DefaultDatabase;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.sql.execute.result.query.QueryResult;
@@ -205,7 +205,7 @@ class GroupByMemoryMergedResultTest {
         ShardingSphereSchema schema = mock(ShardingSphereSchema.class);
         ShardingSphereTable table = mock(ShardingSphereTable.class);
         when(schema.getTable("t_order")).thenReturn(table);
-        when(table.getColumns()).thenReturn(Collections.emptyMap());
+        when(table.getColumns()).thenReturn(Collections.emptyList());
         ShardingSphereDatabase database = mock(ShardingSphereDatabase.class, RETURNS_DEEP_STUBS);
         when(database.getSchema(DefaultDatabase.LOGIC_NAME)).thenReturn(schema);
         when(database.getSchemas()).thenReturn(Collections.singletonMap(DefaultDatabase.LOGIC_NAME, schema));

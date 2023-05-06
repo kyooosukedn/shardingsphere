@@ -18,8 +18,6 @@
 package org.apache.shardingsphere.readwritesplitting.rule;
 
 import org.apache.shardingsphere.infra.config.algorithm.AlgorithmConfiguration;
-import org.apache.shardingsphere.infra.datasource.mapper.DataSourceRole;
-import org.apache.shardingsphere.infra.datasource.mapper.DataSourceRoleInfo;
 import org.apache.shardingsphere.infra.datasource.state.DataSourceState;
 import org.apache.shardingsphere.infra.instance.InstanceContext;
 import org.apache.shardingsphere.infra.metadata.database.schema.QualifiedDatabase;
@@ -28,7 +26,6 @@ import org.apache.shardingsphere.mode.event.storage.StorageNodeRole;
 import org.apache.shardingsphere.mode.event.storage.StorageNodeDataSourceChangedEvent;
 import org.apache.shardingsphere.readwritesplitting.api.ReadwriteSplittingRuleConfiguration;
 import org.apache.shardingsphere.readwritesplitting.api.rule.ReadwriteSplittingDataSourceRuleConfiguration;
-import org.apache.shardingsphere.readwritesplitting.api.strategy.StaticReadwriteSplittingStrategyConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -59,15 +56,15 @@ class ReadwriteSplittingRuleTest {
     
     private ReadwriteSplittingRule createReadwriteSplittingRule() {
         ReadwriteSplittingDataSourceRuleConfiguration config =
-                new ReadwriteSplittingDataSourceRuleConfiguration("readwrite", new StaticReadwriteSplittingStrategyConfiguration("write_ds", Arrays.asList("read_ds_0", "read_ds_1")), null, "random");
+                new ReadwriteSplittingDataSourceRuleConfiguration("readwrite", "write_ds", Arrays.asList("read_ds_0", "read_ds_1"), "random");
         return new ReadwriteSplittingRule("logic_db", new ReadwriteSplittingRuleConfiguration(
-                Collections.singleton(config), Collections.singletonMap("random", new AlgorithmConfiguration("RANDOM", new Properties()))), Collections.emptyList(), mock(InstanceContext.class));
+                Collections.singleton(config), Collections.singletonMap("random", new AlgorithmConfiguration("RANDOM", new Properties()))), mock(InstanceContext.class));
     }
     
     private void assertDataSourceRule(final ReadwriteSplittingDataSourceRule actual) {
         assertThat(actual.getName(), is("readwrite"));
-        assertThat(actual.getReadwriteSplittingStrategy().getWriteDataSource(), is("write_ds"));
-        assertThat(actual.getReadwriteSplittingStrategy().getReadDataSources(), is(Arrays.asList("read_ds_0", "read_ds_1")));
+        assertThat(actual.getReadwriteSplittingGroup().getWriteDataSource(), is("write_ds"));
+        assertThat(actual.getReadwriteSplittingGroup().getReadDataSources(), is(Arrays.asList("read_ds_0", "read_ds_1")));
         assertThat(actual.getLoadBalancer().getType(), is("RANDOM"));
     }
     
@@ -101,9 +98,8 @@ class ReadwriteSplittingRuleTest {
     @Test
     void assertGetDataSourceMapper() {
         ReadwriteSplittingRule readwriteSplittingRule = createReadwriteSplittingRule();
-        Map<String, Collection<DataSourceRoleInfo>> actual = readwriteSplittingRule.getDataSourceMapper();
-        Map<String, Collection<DataSourceRoleInfo>> expected = Collections.singletonMap("readwrite", Arrays.asList(new DataSourceRoleInfo("write_ds", DataSourceRole.PRIMARY),
-                new DataSourceRoleInfo("read_ds_0", DataSourceRole.MEMBER), new DataSourceRoleInfo("read_ds_1", DataSourceRole.MEMBER)));
+        Map<String, Collection<String>> actual = readwriteSplittingRule.getDataSourceMapper();
+        Map<String, Collection<String>> expected = Collections.singletonMap("readwrite", Arrays.asList("write_ds", "read_ds_0", "read_ds_1"));
         assertThat(actual, is(expected));
     }
 }

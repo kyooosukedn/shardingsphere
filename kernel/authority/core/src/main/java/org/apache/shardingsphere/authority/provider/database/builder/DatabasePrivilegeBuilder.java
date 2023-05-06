@@ -84,8 +84,8 @@ public final class DatabasePrivilegeBuilder {
         Arrays.asList(mappings).forEach(each -> {
             String[] userDatabasePair = each.trim().split("=");
             String yamlUser = userDatabasePair[0];
-            String username = yamlUser.substring(0, yamlUser.indexOf("@"));
-            String hostname = yamlUser.substring(yamlUser.indexOf("@") + 1);
+            String username = yamlUser.substring(0, yamlUser.indexOf('@'));
+            String hostname = yamlUser.substring(yamlUser.indexOf('@') + 1);
             ShardingSphereUser shardingSphereUser = new ShardingSphereUser(username, "", hostname);
             Collection<String> databases = result.getOrDefault(shardingSphereUser, new HashSet<>());
             databases.add(userDatabasePair[1]);
@@ -98,7 +98,7 @@ public final class DatabasePrivilegeBuilder {
         Set<String> result = new HashSet<>();
         for (Entry<ShardingSphereUser, Collection<String>> entry : userDatabaseMappings.entrySet()) {
             boolean isAnyOtherHost = checkAnyOtherHost(entry.getKey().getGrantee(), shardingSphereUser);
-            if (isAnyOtherHost || shardingSphereUser == entry.getKey() || shardingSphereUser.equals(entry.getKey())) {
+            if (isAnyOtherHost || shardingSphereUser.equals(entry.getKey())) {
                 result.addAll(entry.getValue());
             }
         }

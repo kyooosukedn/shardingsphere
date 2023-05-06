@@ -21,7 +21,7 @@ import org.apache.shardingsphere.infra.binder.QueryContext;
 import org.apache.shardingsphere.infra.binder.SQLStatementContextFactory;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
-import org.apache.shardingsphere.infra.context.kernel.KernelProcessor;
+import org.apache.shardingsphere.infra.connection.kernel.KernelProcessor;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.audit.SQLAuditEngine;
 import org.apache.shardingsphere.infra.executor.kernel.model.ExecutionGroup;
@@ -142,7 +142,7 @@ public final class MySQLMultiStatementsHandler implements ProxyBackendHandler {
                 (JDBCBackendStatement) connectionSession.getStatementManager(), new StatementOption(false), rules,
                 metaDataContexts.getMetaData().getDatabase(connectionSession.getDatabaseName()).getResourceMetaData().getStorageTypes());
         ExecutionGroupContext<JDBCExecutionUnit> executionGroupContext = prepareEngine.prepare(anyExecutionContext.getRouteContext(), samplingExecutionUnit(),
-                new ExecutionGroupReportContext(connectionSession.getDatabaseName(), connectionSession.getGrantee(), connectionSession.getExecutionId()));
+                new ExecutionGroupReportContext(connectionSession.getProcessId(), connectionSession.getDatabaseName(), connectionSession.getGrantee()));
         for (ExecutionGroup<JDBCExecutionUnit> eachGroup : executionGroupContext.getInputGroups()) {
             for (JDBCExecutionUnit each : eachGroup.getInputs()) {
                 prepareBatchedStatement(each);
@@ -181,9 +181,9 @@ public final class MySQLMultiStatementsHandler implements ProxyBackendHandler {
         return new UpdateResponseHeader(sqlStatementSample, Collections.singletonList(new UpdateResult(updated, 0L)));
     }
     
-    private static class BatchedJDBCExecutorCallback extends JDBCExecutorCallback<int[]> {
+    private static final class BatchedJDBCExecutorCallback extends JDBCExecutorCallback<int[]> {
         
-        BatchedJDBCExecutorCallback(final Map<String, DatabaseType> storageTypes, final SQLStatement sqlStatement, final boolean isExceptionThrown) {
+        private BatchedJDBCExecutorCallback(final Map<String, DatabaseType> storageTypes, final SQLStatement sqlStatement, final boolean isExceptionThrown) {
             super(TypedSPILoader.getService(DatabaseType.class, "MySQL"), storageTypes, sqlStatement, isExceptionThrown);
         }
         

@@ -17,7 +17,7 @@
 
 package org.apache.shardingsphere.proxy.backend.connector.jdbc.transaction;
 
-import org.apache.shardingsphere.infra.context.transaction.TransactionConnectionContext;
+import org.apache.shardingsphere.infra.connection.transaction.TransactionConnectionContext;
 import org.apache.shardingsphere.infra.util.spi.ShardingSphereServiceLoader;
 import org.apache.shardingsphere.proxy.backend.connector.BackendConnection;
 import org.apache.shardingsphere.proxy.backend.connector.TransactionManager;
@@ -138,13 +138,7 @@ public final class BackendTransactionManager implements TransactionManager {
         for (Connection each : connection.getCachedConnections().values()) {
             ConnectionSavepointManager.getInstance().setSavepoint(each, savepointName);
         }
-        connection.getConnectionPostProcessors().add(target -> {
-            try {
-                ConnectionSavepointManager.getInstance().setSavepoint(target, savepointName);
-            } catch (final SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        connection.getConnectionPostProcessors().add(target -> ConnectionSavepointManager.getInstance().setSavepoint(target, savepointName));
     }
     
     @Override

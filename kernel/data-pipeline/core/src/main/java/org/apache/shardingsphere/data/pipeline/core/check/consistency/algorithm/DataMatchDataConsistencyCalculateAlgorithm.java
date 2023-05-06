@@ -78,9 +78,15 @@ public final class DataMatchDataConsistencyCalculateAlgorithm extends AbstractSt
     }
     
     private int getChunkSize(final Properties props) {
-        int result = Integer.parseInt(props.getProperty(CHUNK_SIZE_KEY, DEFAULT_CHUNK_SIZE + ""));
+        int result;
+        try {
+            result = Integer.parseInt(props.getProperty(CHUNK_SIZE_KEY, Integer.toString(DEFAULT_CHUNK_SIZE)));
+        } catch (final NumberFormatException ignore) {
+            log.warn("'chunk-size' is not a valid number, use default value {}", DEFAULT_CHUNK_SIZE);
+            return DEFAULT_CHUNK_SIZE;
+        }
         if (result <= 0) {
-            log.warn("Invalid result={}, use default value", result);
+            log.warn("Invalid 'chunk-size': {}, use default value {}", result, DEFAULT_CHUNK_SIZE);
             return DEFAULT_CHUNK_SIZE;
         }
         return result;
@@ -114,13 +120,13 @@ public final class DataMatchDataConsistencyCalculateAlgorithm extends AbstractSt
                 calculationContext.close();
             }
             return records.isEmpty() ? Optional.empty() : Optional.of(new CalculatedResult(maxUniqueKeyValue, records.size(), records));
+        } catch (final PipelineSQLException ex) {
+            calculationContext.close();
+            throw ex;
             // CHECKSTYLE:OFF
         } catch (final Exception ex) {
             // CHECKSTYLE:ON
             calculationContext.close();
-            if (ex instanceof PipelineSQLException) {
-                throw (PipelineSQLException) ex;
-            }
             throw new PipelineTableDataConsistencyCheckLoadingFailedException(param.getSchemaName(), param.getLogicTableName(), ex);
         }
     }
@@ -152,7 +158,8 @@ public final class DataMatchDataConsistencyCalculateAlgorithm extends AbstractSt
     private void fulfillCalculationContext(final CalculationContext calculationContext, final DataConsistencyCalculateParameter param) throws SQLException {
         String sql = getQuerySQL(param);
         DatabaseType databaseType = TypedSPILoader.getService(DatabaseType.class, param.getDatabaseType());
-        PreparedStatement preparedStatement = setCurrentStatement(JDBCStreamQueryUtils.generateStreamQueryPreparedStatement(databaseType, calculationContext.getConnection(), sql));
+        PreparedStatement preparedStatement = JDBCStreamQueryUtils.generateStreamQueryPreparedStatement(databaseType, calculationContext.getConnection(), sql);
+        setCurrentStatement(preparedStatement);
         if (!(databaseType instanceof MySQLDatabaseType)) {
             preparedStatement.setFetchSize(chunkSize);
         }
@@ -204,9 +211,12 @@ public final class DataMatchDataConsistencyCalculateAlgorithm extends AbstractSt
         }
     }
     
+    /**
+     * Calculated result.
+     */
     @RequiredArgsConstructor
     @Getter
-    static final class CalculatedResult implements DataConsistencyCalculatedResult {
+    public static final class CalculatedResult implements DataConsistencyCalculatedResult {
         
         @NonNull
         private final Object maxUniqueKeyValue;
@@ -215,6 +225,7 @@ public final class DataMatchDataConsistencyCalculateAlgorithm extends AbstractSt
         
         private final Collection<Collection<Object>> records;
         
+        @Override
         public Optional<Object> getMaxUniqueKeyValue() {
             return Optional.of(maxUniqueKeyValue);
         }

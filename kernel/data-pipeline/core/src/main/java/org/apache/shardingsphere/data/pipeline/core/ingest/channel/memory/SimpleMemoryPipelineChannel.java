@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Simple memory pipeline channel.
@@ -41,26 +42,23 @@ public final class SimpleMemoryPipelineChannel implements PipelineChannel {
         this.ackCallback = ackCallback;
     }
     
+    @SneakyThrows(InterruptedException.class)
     @Override
     public void pushRecord(final Record dataRecord) {
-        try {
-            queue.put(dataRecord);
-        } catch (final InterruptedException ex) {
-            throw new RuntimeException("put " + dataRecord + " into queue failed", ex);
-        }
+        queue.put(dataRecord);
     }
     
     @SneakyThrows(InterruptedException.class)
     // TODO thread-safe?
     @Override
-    public List<Record> fetchRecords(final int batchSize, final int timeoutSeconds) {
+    public List<Record> fetchRecords(final int batchSize, final int timeout, final TimeUnit timeUnit) {
         List<Record> result = new ArrayList<>(batchSize);
         long start = System.currentTimeMillis();
         while (batchSize > queue.size()) {
-            if (timeoutSeconds * 1000L <= System.currentTimeMillis() - start) {
+            if (timeUnit.toMillis(timeout) <= System.currentTimeMillis() - start) {
                 break;
             }
-            Thread.sleep(100L);
+            TimeUnit.MILLISECONDS.sleep(100L);
         }
         queue.drainTo(result, batchSize);
         return result;

@@ -32,7 +32,7 @@ import org.apache.shardingsphere.infra.binder.statement.ddl.CursorStatementConte
 import org.apache.shardingsphere.infra.binder.type.CursorAvailable;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
-import org.apache.shardingsphere.infra.context.kernel.KernelProcessor;
+import org.apache.shardingsphere.infra.connection.kernel.KernelProcessor;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.executor.sql.context.ExecutionUnit;
@@ -168,13 +168,9 @@ public final class PreviewHandler extends SQLRULBackendHandler<PreviewStatement>
     }
     
     private String getDatabaseName() {
-        String result = !Strings.isNullOrEmpty(getConnectionSession().getDatabaseName()) ? getConnectionSession().getDatabaseName() : getConnectionSession().getDefaultDatabaseName();
-        if (Strings.isNullOrEmpty(result)) {
-            throw new NoDatabaseSelectedException();
-        }
-        if (!ProxyContext.getInstance().databaseExists(result)) {
-            throw new UnknownDatabaseException(result);
-        }
+        String result = Strings.isNullOrEmpty(getConnectionSession().getDatabaseName()) ? getConnectionSession().getDefaultDatabaseName() : getConnectionSession().getDatabaseName();
+        ShardingSpherePreconditions.checkState(!Strings.isNullOrEmpty(result), NoDatabaseSelectedException::new);
+        ShardingSpherePreconditions.checkState(ProxyContext.getInstance().databaseExists(result), () -> new UnknownDatabaseException(result));
         return result;
     }
 }

@@ -20,8 +20,8 @@ package org.apache.shardingsphere.proxy.backend.connector;
 import org.apache.shardingsphere.dialect.exception.transaction.TableModifyInTransactionException;
 import org.apache.shardingsphere.infra.binder.type.TableAvailable;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
-import org.apache.shardingsphere.infra.context.ConnectionContext;
-import org.apache.shardingsphere.infra.context.transaction.TransactionConnectionContext;
+import org.apache.shardingsphere.infra.connection.ConnectionContext;
+import org.apache.shardingsphere.infra.connection.transaction.TransactionConnectionContext;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.kernel.ExecutorEngine;
 import org.apache.shardingsphere.infra.executor.kernel.model.ExecutionGroupContext;
@@ -176,7 +176,7 @@ public final class ProxySQLExecutor {
         ExecutionGroupContext<RawSQLExecutionUnit> executionGroupContext;
         try {
             executionGroupContext = prepareEngine.prepare(executionContext.getRouteContext(), executionContext.getExecutionUnits(), new ExecutionGroupReportContext(
-                    backendConnection.getConnectionSession().getDatabaseName(), backendConnection.getConnectionSession().getGrantee(), backendConnection.getConnectionSession().getExecutionId()));
+                    backendConnection.getConnectionSession().getProcessId(), backendConnection.getConnectionSession().getDatabaseName(), backendConnection.getConnectionSession().getGrantee()));
         } catch (final SQLException ex) {
             return getSaneExecuteResults(executionContext, ex);
         }
@@ -193,7 +193,7 @@ public final class ProxySQLExecutor {
         ExecutionGroupContext<JDBCExecutionUnit> executionGroupContext;
         try {
             executionGroupContext = prepareEngine.prepare(executionContext.getRouteContext(), executionContext.getExecutionUnits(), new ExecutionGroupReportContext(
-                    backendConnection.getConnectionSession().getDatabaseName(), backendConnection.getConnectionSession().getGrantee(), backendConnection.getConnectionSession().getExecutionId()));
+                    backendConnection.getConnectionSession().getProcessId(), backendConnection.getConnectionSession().getDatabaseName(), backendConnection.getConnectionSession().getGrantee()));
         } catch (final SQLException ex) {
             return getSaneExecuteResults(executionContext, ex);
         }

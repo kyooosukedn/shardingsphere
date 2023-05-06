@@ -43,9 +43,9 @@ import org.apache.shardingsphere.data.pipeline.core.exception.job.UncompletedCon
 import org.apache.shardingsphere.data.pipeline.core.job.PipelineJobIdUtils;
 import org.apache.shardingsphere.data.pipeline.core.job.progress.yaml.YamlConsistencyCheckJobItemProgress;
 import org.apache.shardingsphere.data.pipeline.core.job.progress.yaml.YamlConsistencyCheckJobItemProgressSwapper;
-import org.apache.shardingsphere.data.pipeline.core.job.type.ConsistencyCheckJobType;
 import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.ConsistencyCheckJob;
 import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.ConsistencyCheckJobId;
+import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.ConsistencyCheckJobType;
 import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.api.pojo.CreateConsistencyCheckJobParameter;
 import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.config.ConsistencyCheckJobConfiguration;
 import org.apache.shardingsphere.data.pipeline.scenario.consistencycheck.config.yaml.YamlConsistencyCheckJobConfiguration;
@@ -283,12 +283,12 @@ public final class ConsistencyCheckJobAPI extends AbstractPipelineJobAPIImpl {
             return result;
         }
         ConsistencyCheckJobItemProgress jobItemProgress = progressOptional.get();
-        LocalDateTime checkBeginTime = new Timestamp(jobItemProgress.getCheckBeginTimeMillis()).toLocalDateTime();
         if (null == jobItemProgress.getRecordsCount() || null == jobItemProgress.getCheckedRecordsCount()) {
             result.setFinishedPercentage(0);
             result.setCheckSuccess(false);
             return result;
         }
+        LocalDateTime checkBeginTime = new Timestamp(jobItemProgress.getCheckBeginTimeMillis()).toLocalDateTime();
         long recordsCount = jobItemProgress.getRecordsCount();
         long checkedRecordsCount = Math.min(jobItemProgress.getCheckedRecordsCount(), recordsCount);
         if (JobStatus.FINISHED == jobItemProgress.getStatus()) {

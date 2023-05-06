@@ -19,16 +19,14 @@ package org.apache.shardingsphere.proxy.backend.handler.distsql.ral.queryable;
 
 import org.apache.shardingsphere.distsql.parser.statement.ral.queryable.ShowDistVariableStatement;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
-import org.apache.shardingsphere.infra.config.props.internal.InternalConfigurationProperties;
+import org.apache.shardingsphere.infra.config.props.temporary.TemporaryConfigurationProperties;
 import org.apache.shardingsphere.infra.merge.result.impl.local.LocalDataQueryResultRow;
 import org.apache.shardingsphere.infra.metadata.ShardingSphereMetaData;
 import org.apache.shardingsphere.infra.metadata.database.rule.ShardingSphereRuleMetaData;
 import org.apache.shardingsphere.logging.rule.LoggingRule;
 import org.apache.shardingsphere.logging.rule.builder.DefaultLoggingRuleConfigurationBuilder;
 import org.apache.shardingsphere.proxy.backend.exception.UnsupportedVariableException;
-import org.apache.shardingsphere.proxy.backend.handler.distsql.ral.common.enums.VariableEnum;
 import org.apache.shardingsphere.proxy.backend.session.ConnectionSession;
-import org.apache.shardingsphere.proxy.backend.util.SystemPropertyUtils;
 import org.apache.shardingsphere.test.util.PropertiesBuilder;
 import org.apache.shardingsphere.test.util.PropertiesBuilder.Property;
 import org.apache.shardingsphere.transaction.api.TransactionType;
@@ -84,17 +82,6 @@ class ShowDistVariableExecutorTest {
     }
     
     @Test
-    void assertShowAgentPluginsEnabled() {
-        SystemPropertyUtils.setSystemProperty(VariableEnum.AGENT_PLUGINS_ENABLED.name(), Boolean.FALSE.toString());
-        ShowDistVariableExecutor executor = new ShowDistVariableExecutor();
-        Collection<LocalDataQueryResultRow> actual = executor.getRows(metaData, connectionSession, new ShowDistVariableStatement("AGENT_PLUGINS_ENABLED"));
-        assertThat(actual.size(), is(1));
-        LocalDataQueryResultRow row = actual.iterator().next();
-        assertThat(row.getCell(1), is("agent_plugins_enabled"));
-        assertThat(row.getCell(2), is("false"));
-    }
-    
-    @Test
     void assertShowPropsVariable() {
         when(metaData.getProps()).thenReturn(new ConfigurationProperties(PropertiesBuilder.build(new Property("sql-show", Boolean.TRUE.toString()))));
         when(metaData.getGlobalRuleMetaData()).thenReturn(new ShardingSphereRuleMetaData(Collections.singleton(new LoggingRule(new DefaultLoggingRuleConfigurationBuilder().build()))));
@@ -107,8 +94,8 @@ class ShowDistVariableExecutorTest {
     }
     
     @Test
-    void assertShowInternalPropsVariable() {
-        when(metaData.getInternalProps()).thenReturn(new InternalConfigurationProperties(PropertiesBuilder.build(new Property("proxy-meta-data-collector-enabled", Boolean.FALSE.toString()))));
+    void assertShowTemporaryPropsVariable() {
+        when(metaData.getTemporaryProps()).thenReturn(new TemporaryConfigurationProperties(PropertiesBuilder.build(new Property("proxy-meta-data-collector-enabled", Boolean.FALSE.toString()))));
         ShowDistVariableExecutor executor = new ShowDistVariableExecutor();
         Collection<LocalDataQueryResultRow> actual = executor.getRows(metaData, connectionSession, new ShowDistVariableStatement("PROXY_META_DATA_COLLECTOR_ENABLED"));
         assertThat(actual.size(), is(1));

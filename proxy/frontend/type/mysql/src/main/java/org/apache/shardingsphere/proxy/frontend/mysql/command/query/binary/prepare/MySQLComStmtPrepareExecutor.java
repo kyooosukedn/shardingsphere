@@ -46,7 +46,7 @@ import org.apache.shardingsphere.proxy.backend.session.ConnectionSession;
 import org.apache.shardingsphere.proxy.frontend.command.executor.CommandExecutor;
 import org.apache.shardingsphere.proxy.frontend.mysql.command.ServerStatusFlagCalculator;
 import org.apache.shardingsphere.proxy.frontend.mysql.command.query.binary.MySQLServerPreparedStatement;
-import org.apache.shardingsphere.proxy.frontend.mysql.command.query.binary.MySQLStatementIDGenerator;
+import org.apache.shardingsphere.proxy.frontend.mysql.command.query.binary.MySQLStatementIdGenerator;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.ParameterMarkerSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.AbstractSQLStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
@@ -82,7 +82,7 @@ public final class MySQLComStmtPrepareExecutor implements CommandExecutor {
         }
         SQLStatementContext<?> sqlStatementContext = SQLStatementContextFactory.newInstance(ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData(),
                 sqlStatement, connectionSession.getDefaultDatabaseName());
-        int statementId = MySQLStatementIDGenerator.getInstance().nextStatementId(connectionSession.getConnectionId());
+        int statementId = MySQLStatementIdGenerator.getInstance().nextStatementId(connectionSession.getConnectionId());
         MySQLServerPreparedStatement serverPreparedStatement = new MySQLServerPreparedStatement(packet.getSql(), sqlStatementContext, new CopyOnWriteArrayList<>());
         connectionSession.getServerPreparedStatementRegistry().addPreparedStatement(statementId, serverPreparedStatement);
         return createPackets(sqlStatementContext, statementId, serverPreparedStatement);
@@ -148,7 +148,7 @@ public final class MySQLComStmtPrepareExecutor implements CommandExecutor {
         for (Projection each : projections) {
             // TODO Calculate column definition flag for other projection types
             if (each instanceof ColumnProjection) {
-                result.add(Optional.ofNullable(columnToTableMap.get(each.getExpression())).map(schema::getTable).map(table -> table.getColumns().get(((ColumnProjection) each).getName()))
+                result.add(Optional.ofNullable(columnToTableMap.get(each.getExpression())).map(schema::getTable).map(table -> table.getColumn(((ColumnProjection) each).getName()))
                         .map(column -> createMySQLColumnDefinition41Packet(characterSet, calculateColumnDefinitionFlag(column), MySQLBinaryColumnType.valueOfJDBCType(column.getDataType())))
                         .orElseGet(() -> createMySQLColumnDefinition41Packet(characterSet, 0, MySQLBinaryColumnType.MYSQL_TYPE_VAR_STRING)));
             } else {

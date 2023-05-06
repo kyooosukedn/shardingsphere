@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * ShardingSphere data persist service.
  */
 @Getter
-public final class ShardingSphereDataPersistService {
+public final class ShardingSphereDataPersistService implements ShardingSphereDataBasedPersistService {
     
     private final PersistRepository repository;
     
@@ -115,7 +115,7 @@ public final class ShardingSphereDataPersistService {
     private void persistTableData(final String databaseName, final String schemaName, final ShardingSphereSchemaData schemaData, final Map<String, ShardingSphereDatabase> databases) {
         schemaData.getTableData().values().forEach(each -> {
             YamlShardingSphereRowDataSwapper swapper =
-                    new YamlShardingSphereRowDataSwapper(new ArrayList<>(databases.get(databaseName.toLowerCase()).getSchema(schemaName).getTable(each.getName()).getColumns().values()));
+                    new YamlShardingSphereRowDataSwapper(new ArrayList<>(databases.get(databaseName.toLowerCase()).getSchema(schemaName).getTable(each.getName()).getColumns()));
             persistTableData(databaseName, schemaName, each.getName(), each.getRows().stream().map(swapper::swapToYamlConfiguration).collect(Collectors.toList()));
         });
     }

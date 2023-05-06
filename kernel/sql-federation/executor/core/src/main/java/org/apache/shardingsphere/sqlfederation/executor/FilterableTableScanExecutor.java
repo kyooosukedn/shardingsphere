@@ -39,8 +39,8 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.shardingsphere.infra.binder.QueryContext;
 import org.apache.shardingsphere.infra.binder.SQLStatementContextFactory;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
-import org.apache.shardingsphere.infra.context.ConnectionContext;
-import org.apache.shardingsphere.infra.context.kernel.KernelProcessor;
+import org.apache.shardingsphere.infra.connection.ConnectionContext;
+import org.apache.shardingsphere.infra.connection.kernel.KernelProcessor;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.executor.kernel.model.ExecutionGroup;
@@ -56,7 +56,8 @@ import org.apache.shardingsphere.infra.executor.sql.execute.result.query.QueryRe
 import org.apache.shardingsphere.infra.executor.sql.execute.result.query.impl.driver.jdbc.type.memory.JDBCMemoryQueryResult;
 import org.apache.shardingsphere.infra.executor.sql.execute.result.query.impl.driver.jdbc.type.stream.JDBCStreamQueryResult;
 import org.apache.shardingsphere.infra.executor.sql.prepare.driver.DriverExecutionPrepareEngine;
-import org.apache.shardingsphere.infra.executor.sql.process.ExecuteProcessEngine;
+import org.apache.shardingsphere.infra.executor.sql.process.ProcessEngine;
+import org.apache.shardingsphere.infra.hint.HintValueContext;
 import org.apache.shardingsphere.infra.merge.MergeEngine;
 import org.apache.shardingsphere.infra.merge.result.MergedResult;
 import org.apache.shardingsphere.infra.metadata.ShardingSphereMetaData;
@@ -115,6 +116,8 @@ public final class FilterableTableScanExecutor implements TableScanExecutor {
     
     private final ShardingSphereData data;
     
+    private final ProcessEngine processEngine = new ProcessEngine();
+    
     @Override
     public Enumerable<Object> executeScalar(final ShardingSphereTable table, final ScanNodeExecutorContext scanContext) {
         return new AbstractEnumerable<Object>() {
@@ -136,7 +139,7 @@ public final class FilterableTableScanExecutor implements TableScanExecutor {
         }
         SqlString sqlString = createSQLString(table, (FilterableScanNodeExecutorContext) scanContext, SQLDialectFactory.getSQLDialect(databaseType));
         SQLFederationExecutorContext federationContext = executorContext.getFederationContext();
-        QueryContext queryContext = createQueryContext(federationContext.getMetaData(), sqlString, databaseType);
+        QueryContext queryContext = createQueryContext(federationContext.getMetaData(), sqlString, databaseType, federationContext.getQueryContext().isUseCache());
         ShardingSphereDatabase database = federationContext.getMetaData().getDatabase(databaseName);
         // TODO need to get session context
         ExecutionContext context = new KernelProcessor().generateExecutionContext(queryContext, database, globalRuleMetaData, executorContext.getProps(), new ConnectionContext());
@@ -148,12 +151,11 @@ public final class FilterableTableScanExecutor implements TableScanExecutor {
     }
     
     private AbstractEnumerable<Object[]> execute(final DatabaseType databaseType, final QueryContext queryContext, final ShardingSphereDatabase database, final ExecutionContext context) {
-        ExecuteProcessEngine executeProcessEngine = new ExecuteProcessEngine();
         try {
             ExecutionGroupContext<JDBCExecutionUnit> executionGroupContext =
                     prepareEngine.prepare(context.getRouteContext(), context.getExecutionUnits(), new ExecutionGroupReportContext(database.getName()));
             setParameters(executionGroupContext.getInputGroups());
-            executeProcessEngine.initializeExecution(executionGroupContext, context.getQueryContext());
+            processEngine.executeSQL(executionGroupContext, context.getQueryContext());
             List<QueryResult> queryResults = execute(executionGroupContext, databaseType);
             // TODO need to get session context
             MergeEngine mergeEngine = new MergeEngine(database, executorContext.getProps(), new ConnectionContext());
@@ -163,7 +165,7 @@ public final class FilterableTableScanExecutor implements TableScanExecutor {
         } catch (final SQLException ex) {
             throw new SQLWrapperException(ex);
         } finally {
-            executeProcessEngine.cleanExecution();
+            processEngine.completeSQLExecution();
         }
     }
     
@@ -274,14 +276,14 @@ public final class FilterableTableScanExecutor implements TableScanExecutor {
         return result;
     }
     
-    private QueryContext createQueryContext(final ShardingSphereMetaData metaData, final SqlString sqlString, final DatabaseType databaseType) {
+    private QueryContext createQueryContext(final ShardingSphereMetaData metaData, final SqlString sqlString, final DatabaseType databaseType, final boolean useCache) {
         String sql = sqlString.getSql().replace("\n", " ");
         SQLStatement sqlStatement = new SQLStatementParserEngine(databaseType.getType(),
                 optimizerContext.getSqlParserRule().getSqlStatementCache(), optimizerContext.getSqlParserRule().getParseTreeCache(),
-                optimizerContext.getSqlParserRule().isSqlCommentParseEnabled()).parse(sql, false);
+                optimizerContext.getSqlParserRule().isSqlCommentParseEnabled()).parse(sql, useCache);
         List<Object> params = getParameters(sqlString.getDynamicParameters());
         SQLStatementContext<?> sqlStatementContext = SQLStatementContextFactory.newInstance(metaData, params, sqlStatement, executorContext.getDatabaseName());
-        return new QueryContext(sqlStatementContext, sql, params);
+        return new QueryContext(sqlStatementContext, sql, params, new HintValueContext(), useCache);
     }
     
     private List<Object> getParameters(final List<Integer> paramIndexes) {

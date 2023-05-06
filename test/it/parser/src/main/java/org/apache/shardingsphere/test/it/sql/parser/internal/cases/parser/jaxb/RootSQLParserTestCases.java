@@ -281,11 +281,14 @@ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.s
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.DeleteStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.DoStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.InsertStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.LoadDataStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.LoadXMLStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.LockTableStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.MergeStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.SelectStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.dml.UpdateStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.AlterComputeNodeStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.AlterGlobalClockRuleStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.AlterLocalTransactionRuleStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.AlterReadwriteSplittingStorageUnitStatusStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.AlterSQLParserRuleStatementTestCase;
@@ -309,6 +312,7 @@ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.s
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowComputeNodesStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowDistVariableStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowDistVariablesStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowGlobalClockRuleStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowMigrationListStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowSQLParserRuleStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowSQLTranslatorRuleStatementTestCase;
@@ -317,6 +321,8 @@ import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.s
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowTrafficRulesStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.ShowTransactionRuleStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.UnlabelComputeNodeStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.cdc.CommitStreamingStatementTestCase;
+import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.cdc.RollbackStreamingStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.cdc.ShowStreamingListStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.cdc.ShowStreamingStatusStatementTestCase;
 import org.apache.shardingsphere.test.it.sql.parser.internal.cases.parser.jaxb.statement.ral.migration.CheckMigrationStatementTestCase;
@@ -821,6 +827,12 @@ public final class RootSQLParserTestCases {
     @XmlElement(name = "copy")
     private final List<CopyStatementTestCase> copyTestCases = new LinkedList<>();
     
+    @XmlElement(name = "load-data")
+    private final List<LoadDataStatementTestCase> loadDataTestCases = new LinkedList<>();
+    
+    @XmlElement(name = "load-xml")
+    private final List<LoadXMLStatementTestCase> loadXmlTestCases = new LinkedList<>();
+    
     @XmlElement(name = "xa")
     private final List<XATestCase> xaTestCases = new LinkedList<>();
     
@@ -1006,6 +1018,12 @@ public final class RootSQLParserTestCases {
     
     @XmlElement(name = "show-streaming-status")
     private final List<ShowStreamingStatusStatementTestCase> showStreamingStatusTestCases = new LinkedList<>();
+    
+    @XmlElement(name = "rollback-streaming")
+    private final List<RollbackStreamingStatementTestCase> rollbackStreamingTestCases = new LinkedList<>();
+    
+    @XmlElement(name = "commit-streaming")
+    private final List<CommitStreamingStatementTestCase> commitStreamingTestCases = new LinkedList<>();
     
     @XmlElement(name = "preview-sql")
     private final List<PreviewStatementTestCase> previewTestCases = new LinkedList<>();
@@ -1231,6 +1249,9 @@ public final class RootSQLParserTestCases {
     
     @XmlElement(name = "alter-traffic-rule")
     private final List<AlterTrafficRuleStatementTestCase> alterTrafficRulesTestCases = new LinkedList<>();
+    
+    @XmlElement(name = "alter-global-clock-rule")
+    private final List<AlterGlobalClockRuleStatementTestCase> alterGlobalClockRulesTestCases = new LinkedList<>();
     
     @XmlElement(name = "alter-sql-parser-rule")
     private final List<AlterSQLParserRuleStatementTestCase> alterSQLParserRuleTestCases = new LinkedList<>();
@@ -1588,6 +1609,9 @@ public final class RootSQLParserTestCases {
     
     @XmlElement(name = "show-sql-translator-rule")
     private final List<ShowSQLTranslatorRuleStatementTestCase> showSQLTranslatorRuleStatementTestCases = new LinkedList<>();
+    
+    @XmlElement(name = "show-global-clock-rule")
+    private final List<ShowGlobalClockRuleStatementTestCase> showGlobalClockRuleStatementTestCases = new LinkedList<>();
     
     @XmlElement(name = "create-foreign-table")
     private final List<CreateForeignTableStatementTestCase> createForeignTableStatementTestCases = new LinkedList<>();

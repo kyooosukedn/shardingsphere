@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
+import org.apache.shardingsphere.data.pipeline.core.exception.PipelineInternalException;
 import org.apache.shardingsphere.data.pipeline.core.ingest.IngestDataChangeType;
 import org.apache.shardingsphere.data.pipeline.core.ingest.exception.IngestException;
 import org.apache.shardingsphere.data.pipeline.postgresql.ingest.wal.decode.BaseLogSequenceNumber;
@@ -92,7 +93,7 @@ public final class MppdbDecodingPlugin implements DecodingPlugin {
         } else if (dataText.startsWith("COMMIT")) {
             int commitBeginIndex = dataText.indexOf("COMMIT") + "COMMIT".length() + 1;
             int csnBeginIndex = dataText.indexOf("CSN") + "CSN".length() + 1;
-            result = new CommitTXEvent(Long.parseLong(dataText.substring(commitBeginIndex, dataText.indexOf(" ", commitBeginIndex))), Long.parseLong(dataText.substring(csnBeginIndex)));
+            result = new CommitTXEvent(Long.parseLong(dataText.substring(commitBeginIndex, dataText.indexOf(' ', commitBeginIndex))), Long.parseLong(dataText.substring(csnBeginIndex)));
         } else if (dataText.startsWith("{")) {
             result = readTableEvent(dataText);
         }
@@ -108,7 +109,7 @@ public final class MppdbDecodingPlugin implements DecodingPlugin {
         try {
             mppTableData = OBJECT_MAPPER.readValue(mppData, MppTableData.class);
         } catch (final JsonProcessingException ex) {
-            throw new RuntimeException(ex);
+            throw new PipelineInternalException(ex);
         }
         AbstractRowEvent result;
         String rowEventType = mppTableData.getOpType();

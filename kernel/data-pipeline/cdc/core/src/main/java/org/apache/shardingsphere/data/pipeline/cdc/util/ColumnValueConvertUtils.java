@@ -27,6 +27,9 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.Message;
 import com.google.protobuf.StringValue;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -49,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Column value convert utility class.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public final class ColumnValueConvertUtils {
     
@@ -64,6 +68,7 @@ public final class ColumnValueConvertUtils {
      * @throws RuntimeException runtime exception
      */
     @SuppressWarnings("deprecation")
+    @SneakyThrows(SQLException.class)
     public static Message convertToProtobufMessage(final Object object) {
         if (null == object) {
             return Empty.getDefaultInstance();
@@ -102,14 +107,14 @@ public final class ColumnValueConvertUtils {
             return BytesValue.of(ByteString.copyFrom((byte[]) object));
         }
         if (object instanceof Time) {
-            java.sql.Time time = (java.sql.Time) object;
+            Time time = (Time) object;
             long millis = (int) (time.getTime() % MILLISECONDS_PER_SECOND);
             int nanosOfSecond = (int) (millis * NANOSECONDS_PER_MILLISECOND);
             LocalTime localTime = LocalTime.of(time.getHours(), time.getMinutes(), time.getSeconds(), nanosOfSecond);
             return Int64Value.of(localTime.toNanoOfDay());
         }
         if (object instanceof java.sql.Date) {
-            return Int64Value.of((((java.sql.Date) object).toLocalDate()).toEpochDay());
+            return Int64Value.of(((java.sql.Date) object).toLocalDate().toEpochDay());
         }
         if (object instanceof Date) {
             return converToProtobufTimestamp((Date) object);
@@ -139,21 +144,11 @@ public final class ColumnValueConvertUtils {
         }
         if (object instanceof Clob) {
             Clob clob = (Clob) object;
-            try {
-                return StringValue.of(clob.getSubString(1, (int) clob.length()));
-            } catch (final SQLException ex) {
-                log.error("get clob length failed", ex);
-                throw new RuntimeException(ex);
-            }
+            return StringValue.of(clob.getSubString(1, (int) clob.length()));
         }
         if (object instanceof Blob) {
             Blob blob = (Blob) object;
-            try {
-                return BytesValue.of(ByteString.copyFrom(blob.getBytes(1, (int) blob.length())));
-            } catch (final SQLException ex) {
-                log.error("get blob bytes failed", ex);
-                throw new RuntimeException(ex);
-            }
+            return BytesValue.of(ByteString.copyFrom(blob.getBytes(1, (int) blob.length())));
         }
         return StringValue.newBuilder().setValue(object.toString()).build();
     }

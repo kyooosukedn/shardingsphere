@@ -17,12 +17,15 @@
 
 package org.apache.shardingsphere.metadata;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.shardingsphere.infra.config.database.DatabaseConfiguration;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
 import org.apache.shardingsphere.infra.instance.InstanceContext;
 import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
 import org.apache.shardingsphere.metadata.factory.ExternalMetaDataFactory;
 import org.apache.shardingsphere.metadata.factory.InternalMetaDataFactory;
+import org.apache.shardingsphere.metadata.persist.MetaDataBasedPersistService;
 import org.apache.shardingsphere.metadata.persist.MetaDataPersistService;
 
 import java.sql.SQLException;
@@ -31,6 +34,7 @@ import java.util.Map;
 /**
  * Meta data factory.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MetaDataFactory {
     
     /**
@@ -45,7 +49,7 @@ public final class MetaDataFactory {
      * @return database meta data
      * @throws SQLException sql exception
      */
-    public static ShardingSphereDatabase create(final String databaseName, final boolean internalLoadMetaData, final MetaDataPersistService persistService,
+    public static ShardingSphereDatabase create(final String databaseName, final boolean internalLoadMetaData, final MetaDataBasedPersistService persistService,
                                                 final DatabaseConfiguration databaseConfig, final ConfigurationProperties props, final InstanceContext instanceContext) throws SQLException {
         return internalLoadMetaData ? InternalMetaDataFactory.create(databaseName, persistService, databaseConfig, props, instanceContext)
                 : ExternalMetaDataFactory.create(databaseName, databaseConfig, props, instanceContext);

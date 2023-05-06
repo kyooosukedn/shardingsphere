@@ -101,6 +101,7 @@ public abstract class AbstractInventoryIncrementalJobAPIImpl extends AbstractPip
         return result;
     }
     
+    @Override
     protected abstract TableBasedPipelineJobInfo getJobInfo(String jobId);
     
     @Override
@@ -125,8 +126,9 @@ public abstract class AbstractInventoryIncrementalJobAPIImpl extends AbstractPip
             int shardingItem = entry.getKey();
             TableBasedPipelineJobInfo jobInfo = getJobInfo(jobId);
             InventoryIncrementalJobItemProgress jobItemProgress = entry.getValue();
+            String errorMessage = getJobItemErrorMessage(jobId, shardingItem);
             if (null == jobItemProgress) {
-                result.add(new InventoryIncrementalJobItemInfo(shardingItem, jobInfo.getTable(), null, startTimeMillis, 0, ""));
+                result.add(new InventoryIncrementalJobItemInfo(shardingItem, jobInfo.getTable(), null, startTimeMillis, 0, errorMessage));
                 continue;
             }
             int inventoryFinishedPercentage = 0;
@@ -135,7 +137,6 @@ public abstract class AbstractInventoryIncrementalJobAPIImpl extends AbstractPip
             } else if (0 != jobItemProgress.getProcessedRecordsCount() && 0 != jobItemProgress.getInventoryRecordsCount()) {
                 inventoryFinishedPercentage = (int) Math.min(100, jobItemProgress.getProcessedRecordsCount() * 100 / jobItemProgress.getInventoryRecordsCount());
             }
-            String errorMessage = getJobItemErrorMessage(jobId, shardingItem);
             result.add(new InventoryIncrementalJobItemInfo(shardingItem, jobInfo.getTable(), jobItemProgress, startTimeMillis, inventoryFinishedPercentage, errorMessage));
         }
         return result;
@@ -158,8 +159,7 @@ public abstract class AbstractInventoryIncrementalJobAPIImpl extends AbstractPip
     }
     
     private JobItemIncrementalTasksProgress getIncrementalTasksProgress(final Collection<IncrementalTask> incrementalTasks) {
-        IncrementalTask incrementalTask = incrementalTasks.size() > 0 ? incrementalTasks.iterator().next() : null;
-        return new JobItemIncrementalTasksProgress(null != incrementalTask ? incrementalTask.getTaskProgress() : null);
+        return new JobItemIncrementalTasksProgress(incrementalTasks.isEmpty() ? null : incrementalTasks.iterator().next().getTaskProgress());
     }
     
     private JobItemInventoryTasksProgress getInventoryTasksProgress(final Collection<InventoryTask> inventoryTasks) {

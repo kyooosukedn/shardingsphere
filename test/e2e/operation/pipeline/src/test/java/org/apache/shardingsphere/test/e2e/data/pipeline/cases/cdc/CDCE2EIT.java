@@ -121,7 +121,7 @@ class CDCE2EIT {
                 initSchemaAndTable(containerComposer, connection, 0);
             }
             startCDCClient(containerComposer);
-            Awaitility.await().atMost(10, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> !containerComposer.queryForListWithLog("SHOW STREAMING LIST").isEmpty());
+            Awaitility.await().atMost(10L, TimeUnit.SECONDS).pollInterval(1L, TimeUnit.SECONDS).until(() -> !containerComposer.queryForListWithLog("SHOW STREAMING LIST").isEmpty());
             String jobId = containerComposer.queryForListWithLog("SHOW STREAMING LIST").get(0).get("id").toString();
             containerComposer.waitIncrementTaskFinished(String.format("SHOW STREAMING STATUS '%s'", jobId));
             String tableName = containerComposer.getDatabaseType().isSchemaAvailable() ? String.join(".", "test", SOURCE_TABLE_NAME) : SOURCE_TABLE_NAME;
@@ -132,7 +132,7 @@ class CDCE2EIT {
                 ResultSet resultSet = connection.createStatement().executeQuery(String.format("SELECT * FROM %s ORDER BY order_id ASC", getOrderTableNameWithSchema(containerComposer)));
                 actualProxyList = containerComposer.transformResultSetToList(resultSet);
             }
-            Awaitility.await().atMost(20, TimeUnit.SECONDS).pollInterval(2, TimeUnit.SECONDS)
+            Awaitility.await().atMost(20L, TimeUnit.SECONDS).pollInterval(2L, TimeUnit.SECONDS)
                     .until(() -> listOrderRecords(containerComposer, getOrderTableNameWithSchema(containerComposer)).size() == actualProxyList.size());
             SchemaTableName schemaTableName = containerComposer.getDatabaseType().isSchemaAvailable()
                     ? new SchemaTableName(new SchemaName(PipelineContainerComposer.SCHEMA_NAME), new TableName(SOURCE_TABLE_NAME))
@@ -149,6 +149,8 @@ class CDCE2EIT {
                     tableMetaData.getColumnNames(), primaryKeyMetaData, null, progressContext);
             DataConsistencyCheckResult checkResult = checker.check(new DataMatchDataConsistencyCalculateAlgorithm());
             assertTrue(checkResult.isMatched());
+            containerComposer.proxyExecuteWithLog(String.format("COMMIT STREAMING '%s'", jobId), 0);
+            assertTrue(containerComposer.queryForListWithLog("SHOW STREAMING LIST").isEmpty());
         }
     }
     
@@ -170,8 +172,7 @@ class CDCE2EIT {
     private void startCDCClient(final PipelineContainerComposer containerComposer) {
         DataSource dataSource = StorageContainerUtils.generateDataSource(containerComposer.appendExtraParameter(containerComposer.getActualJdbcUrlTemplate(PipelineContainerComposer.DS_4, false)),
                 containerComposer.getUsername(), containerComposer.getPassword());
-        DataSourceRecordConsumer dataSourceRecordConsumer = new DataSourceRecordConsumer(dataSource, containerComposer.getDatabaseType());
-        StartCDCClientParameter parameter = new StartCDCClientParameter(dataSourceRecordConsumer);
+        StartCDCClientParameter parameter = new StartCDCClientParameter();
         parameter.setAddress("localhost");
         parameter.setPort(containerComposer.getContainerComposer().getProxyCDCPort());
         parameter.setUsername(ProxyContainerConstants.USERNAME);
@@ -181,7 +182,8 @@ class CDCE2EIT {
         parameter.setFull(true);
         String schema = containerComposer.getDatabaseType().isSchemaAvailable() ? "test" : "";
         parameter.setSchemaTables(Collections.singletonList(SchemaTable.newBuilder().setTable(SOURCE_TABLE_NAME).setSchema(schema).build()));
-        CompletableFuture.runAsync(() -> new CDCClient(parameter).start(), executor).whenComplete((unused, throwable) -> {
+        DataSourceRecordConsumer recordConsumer = new DataSourceRecordConsumer(dataSource, containerComposer.getDatabaseType());
+        CompletableFuture.runAsync(() -> new CDCClient(parameter, recordConsumer).start(), executor).whenComplete((unused, throwable) -> {
             if (null != throwable) {
                 log.error("cdc client sync failed, ", throwable);
             }

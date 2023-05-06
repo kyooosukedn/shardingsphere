@@ -36,9 +36,8 @@ public abstract class AbstractDataConsistencyCalculateAlgorithm implements DataC
     
     private volatile Statement currentStatement;
     
-    protected <T extends Statement> T setCurrentStatement(final T statement) {
+    protected void setCurrentStatement(final Statement statement) {
         this.currentStatement = statement;
-        return statement;
     }
     
     @Override
@@ -54,10 +53,8 @@ public abstract class AbstractDataConsistencyCalculateAlgorithm implements DataC
             statement.cancel();
         } catch (final SQLFeatureNotSupportedException ex) {
             log.info("cancel is not supported: {}", ex.getMessage());
-        } catch (final SQLException ex) {
-            log.info("cancel failed: {}", ex.getMessage());
             // CHECKSTYLE:OFF
-        } catch (final RuntimeException ex) {
+        } catch (final SQLException | RuntimeException ex) {
             // CHECKSTYLE:ON
             log.info("cancel failed: {}", ex.getMessage());
         }

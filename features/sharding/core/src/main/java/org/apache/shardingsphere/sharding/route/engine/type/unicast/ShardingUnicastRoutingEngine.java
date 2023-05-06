@@ -24,7 +24,7 @@ import org.apache.shardingsphere.infra.binder.statement.ddl.AlterViewStatementCo
 import org.apache.shardingsphere.infra.binder.statement.ddl.CreateViewStatementContext;
 import org.apache.shardingsphere.infra.binder.statement.ddl.DropViewStatementContext;
 import org.apache.shardingsphere.infra.binder.type.CursorAvailable;
-import org.apache.shardingsphere.infra.context.ConnectionContext;
+import org.apache.shardingsphere.infra.connection.ConnectionContext;
 import org.apache.shardingsphere.infra.datanode.DataNode;
 import org.apache.shardingsphere.infra.route.context.RouteContext;
 import org.apache.shardingsphere.infra.route.context.RouteMapper;
@@ -117,7 +117,7 @@ public final class ShardingUnicastRoutingEngine implements ShardingRouteEngine {
     
     private String getRandomDataSourceName(final Collection<String> dataSourceNames) {
         Collection<String> preferredDataSourceNames = connectionContext.getPreferredDataSourceNames();
-        List<String> availableDataSourceNames = new ArrayList<>(!preferredDataSourceNames.isEmpty() ? preferredDataSourceNames : dataSourceNames);
+        List<String> availableDataSourceNames = new ArrayList<>(preferredDataSourceNames.isEmpty() ? dataSourceNames : preferredDataSourceNames);
         return availableDataSourceNames.get(ThreadLocalRandom.current().nextInt(availableDataSourceNames.size()));
     }
 }

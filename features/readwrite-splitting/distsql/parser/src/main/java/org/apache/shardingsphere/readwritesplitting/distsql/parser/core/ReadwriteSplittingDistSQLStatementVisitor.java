@@ -31,7 +31,6 @@ import org.apache.shardingsphere.distsql.parser.autogen.ReadwriteSplittingDistSQ
 import org.apache.shardingsphere.distsql.parser.autogen.ReadwriteSplittingDistSQLStatementParser.ReadwriteSplittingRuleDefinitionContext;
 import org.apache.shardingsphere.distsql.parser.autogen.ReadwriteSplittingDistSQLStatementParser.ShowReadwriteSplittingRulesContext;
 import org.apache.shardingsphere.distsql.parser.autogen.ReadwriteSplittingDistSQLStatementParser.ShowStatusFromReadwriteSplittingRulesContext;
-import org.apache.shardingsphere.distsql.parser.autogen.ReadwriteSplittingDistSQLStatementParser.StaticReadwriteSplittingRuleDefinitionContext;
 import org.apache.shardingsphere.distsql.parser.segment.AlgorithmSegment;
 import org.apache.shardingsphere.readwritesplitting.distsql.parser.segment.ReadwriteSplittingRuleSegment;
 import org.apache.shardingsphere.readwritesplitting.distsql.parser.statement.AlterReadwriteSplittingRuleStatement;
@@ -41,7 +40,7 @@ import org.apache.shardingsphere.readwritesplitting.distsql.parser.statement.Dro
 import org.apache.shardingsphere.readwritesplitting.distsql.parser.statement.ShowReadwriteSplittingRulesStatement;
 import org.apache.shardingsphere.readwritesplitting.distsql.parser.statement.ShowStatusFromReadwriteSplittingRulesStatement;
 import org.apache.shardingsphere.readwritesplitting.distsql.parser.statement.status.AlterReadwriteSplittingStorageUnitStatusStatement;
-import org.apache.shardingsphere.sql.parser.api.visitor.ASTNode;
+import org.apache.shardingsphere.sql.parser.api.ASTNode;
 import org.apache.shardingsphere.sql.parser.api.visitor.SQLVisitor;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.DatabaseSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.value.identifier.IdentifierValue;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
 /**
  * SQL statement visitor for readwrite-splitting DistSQL.
  */
-public final class ReadwriteSplittingDistSQLStatementVisitor extends ReadwriteSplittingDistSQLStatementBaseVisitor<ASTNode> implements SQLVisitor {
+public final class ReadwriteSplittingDistSQLStatementVisitor extends ReadwriteSplittingDistSQLStatementBaseVisitor<ASTNode> implements SQLVisitor<ASTNode> {
     
     @Override
     public ASTNode visitCreateReadwriteSplittingRule(final CreateReadwriteSplittingRuleContext ctx) {
@@ -88,9 +87,8 @@ public final class ReadwriteSplittingDistSQLStatementVisitor extends ReadwriteSp
     
     @Override
     public ASTNode visitReadwriteSplittingRuleDefinition(final ReadwriteSplittingRuleDefinitionContext ctx) {
-        StaticReadwriteSplittingRuleDefinitionContext staticRuleDefinitionCtx = ctx.staticReadwriteSplittingRuleDefinition();
-        return new ReadwriteSplittingRuleSegment(getIdentifierValue(ctx.ruleName()), getIdentifierValue(staticRuleDefinitionCtx.writeStorageUnitName()),
-                staticRuleDefinitionCtx.readStorageUnitsNames().storageUnitName().stream().map(this::getIdentifierValue).collect(Collectors.toList()),
+        return new ReadwriteSplittingRuleSegment(getIdentifierValue(ctx.ruleName()), getIdentifierValue(ctx.writeStorageUnitName()),
+                ctx.readStorageUnitsNames().storageUnitName().stream().map(this::getIdentifierValue).collect(Collectors.toList()),
                 null == ctx.algorithmDefinition() ? null : (AlgorithmSegment) visitAlgorithmDefinition(ctx.algorithmDefinition()));
     }
     

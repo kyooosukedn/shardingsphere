@@ -114,6 +114,9 @@ public final class InventoryDumper extends AbstractLifecycleExecutor implements 
     private void dump(final PipelineTableMetaData tableMetaData, final Connection connection) throws SQLException {
         int batchSize = dumperConfig.getBatchSize();
         DatabaseType databaseType = dumperConfig.getDataSourceConfig().getDatabaseType();
+        if (null != dumperConfig.getTransactionIsolation()) {
+            connection.setTransactionIsolation(dumperConfig.getTransactionIsolation());
+        }
         try (PreparedStatement preparedStatement = JDBCStreamQueryUtils.generateStreamQueryPreparedStatement(databaseType, connection, buildInventoryDumpSQL())) {
             dumpStatement = preparedStatement;
             if (!(databaseType instanceof MySQLDatabaseType)) {
@@ -203,9 +206,9 @@ public final class InventoryDumper extends AbstractLifecycleExecutor implements 
     }
     
     private IngestPosition<?> newPosition(final ResultSet resultSet) throws SQLException {
-        return !dumperConfig.hasUniqueKey()
-                ? new PlaceholderPosition()
-                : PrimaryKeyPositionFactory.newInstance(resultSet.getObject(dumperConfig.getUniqueKeyColumns().get(0).getName()), ((PrimaryKeyPosition<?>) dumperConfig.getPosition()).getEndValue());
+        return dumperConfig.hasUniqueKey()
+                ? PrimaryKeyPositionFactory.newInstance(resultSet.getObject(dumperConfig.getUniqueKeyColumns().get(0).getName()), ((PrimaryKeyPosition<?>) dumperConfig.getPosition()).getEndValue())
+                : new PlaceholderPosition();
     }
     
     @Override

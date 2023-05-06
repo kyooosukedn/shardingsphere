@@ -90,7 +90,7 @@ public final class MaskAlgorithmPropsChecker {
         } catch (final NumberFormatException ex) {
             throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", positiveIntegerTypeConfigKey));
         }
-        
+
         if (!Strings.isNullOrEmpty(positiveIntegerTypeConfigKey)) {
             int integerValue = Integer.parseInt(props.getProperty(positiveIntegerTypeConfigKey));
             ShardingSpherePreconditions.checkState(integerValue > 0,

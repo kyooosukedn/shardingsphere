@@ -19,9 +19,9 @@ package org.apache.shardingsphere.encrypt.rewrite.token.generator;
 
 import lombok.Setter;
 import org.apache.shardingsphere.encrypt.exception.syntax.UnsupportedEncryptSQLException;
+import org.apache.shardingsphere.encrypt.rewrite.aware.EncryptRuleAware;
 import org.apache.shardingsphere.encrypt.rule.EncryptRule;
 import org.apache.shardingsphere.encrypt.rule.EncryptTable;
-import org.apache.shardingsphere.encrypt.rewrite.aware.EncryptRuleAware;
 import org.apache.shardingsphere.infra.binder.segment.select.projection.impl.ColumnProjection;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.binder.type.WhereAvailable;
@@ -83,32 +83,28 @@ public final class EncryptPredicateColumnTokenGenerator implements CollectionSQL
             if (!encryptTable.isPresent() || !encryptTable.get().findEncryptColumn(each.getIdentifier().getValue()).isPresent()) {
                 continue;
             }
-            int startIndex = each.getOwner().isPresent() ? each.getOwner().get().getStopIndex() + 2 : each.getStartIndex();
-            int stopIndex = each.getStopIndex();
-            boolean queryWithCipherColumn = encryptRule.isQueryWithCipherColumn(tableName, each.getIdentifier().getValue());
-            if (!queryWithCipherColumn) {
-                Optional<String> plainColumn = encryptTable.get().findPlainColumn(each.getIdentifier().getValue());
-                if (plainColumn.isPresent()) {
-                    result.add(new SubstitutableColumnNameToken(startIndex, stopIndex, createColumnProjections(plainColumn.get())));
-                    continue;
-                }
-            }
-            // TODO remove foreach loop to improve performance
-            if (isColumnSegmentIncludedInLikeExpression(whereSegments, each)) {
-                Optional<String> likeQueryColumn = encryptTable.get().findLikeQueryColumn(each.getIdentifier().getValue());
-                if (likeQueryColumn.isPresent()) {
-                    result.add(new SubstitutableColumnNameToken(startIndex, stopIndex, createColumnProjections(likeQueryColumn.get())));
-                    continue;
-                } else {
-                    throw new UnsupportedEncryptSQLException("LIKE");
-                }
-            }
-            Optional<String> assistedQueryColumn = encryptTable.get().findAssistedQueryColumn(each.getIdentifier().getValue());
-            SubstitutableColumnNameToken encryptColumnNameToken = assistedQueryColumn.map(columnName -> new SubstitutableColumnNameToken(startIndex, stopIndex, createColumnProjections(columnName)))
-                    .orElseGet(() -> new SubstitutableColumnNameToken(startIndex, stopIndex, createColumnProjections(encryptTable.get().getCipherColumn(each.getIdentifier().getValue()))));
-            result.add(encryptColumnNameToken);
+            result.add(buildSubstitutableColumnNameToken(each, tableName, whereSegments, encryptTable.get()));
         }
         return result;
+    }
+    
+    private SubstitutableColumnNameToken buildSubstitutableColumnNameToken(final ColumnSegment columnSegment, final String tableName, final Collection<WhereSegment> whereSegments,
+                                                                           final EncryptTable encryptTable) {
+        int startIndex = columnSegment.getOwner().isPresent() ? columnSegment.getOwner().get().getStopIndex() + 2 : columnSegment.getStartIndex();
+        int stopIndex = columnSegment.getStopIndex();
+        String logicColumn = columnSegment.getIdentifier().getValue();
+        // TODO remove foreach loop to improve performance
+        if (isColumnSegmentIncludedInLikeExpression(whereSegments, columnSegment)) {
+            Optional<String> likeQueryColumn = encryptTable.findLikeQueryColumn(logicColumn);
+            if (likeQueryColumn.isPresent()) {
+                return new SubstitutableColumnNameToken(startIndex, stopIndex, createColumnProjections(likeQueryColumn.get()));
+            } else {
+                throw new UnsupportedEncryptSQLException("LIKE");
+            }
+        }
+        Collection<ColumnProjection> columnProjections =
+                encryptTable.findAssistedQueryColumn(logicColumn).map(this::createColumnProjections).orElseGet(() -> createColumnProjections(encryptTable.getCipherColumn(logicColumn)));
+        return new SubstitutableColumnNameToken(startIndex, stopIndex, columnProjections);
     }
     
     private boolean isColumnSegmentIncludedInLikeExpression(final Collection<WhereSegment> whereSegments, final ColumnSegment targetColumnSegment) {
@@ -126,8 +122,8 @@ public final class EncryptPredicateColumnTokenGenerator implements CollectionSQL
     
     private boolean isLikeColumnSegment(final AndPredicate andPredicate, final ColumnSegment targetColumnSegment) {
         for (ExpressionSegment each : andPredicate.getPredicates()) {
-            if (each instanceof BinaryOperationExpression && ((BinaryOperationExpression) each).getOperator().equalsIgnoreCase("LIKE")
-                    && isSameColumnSegment(((BinaryOperationExpression) each).getLeft(), targetColumnSegment)) {
+            if (each instanceof BinaryOperationExpression
+                    && "LIKE".equalsIgnoreCase(((BinaryOperationExpression) each).getOperator()) && isSameColumnSegment(((BinaryOperationExpression) each).getLeft(), targetColumnSegment)) {
                 return true;
             }
         }

@@ -108,7 +108,7 @@ public abstract class AbstractPipelineSQLBuilder implements PipelineSQLBuilder {
     protected final String getQualifiedTableName(final String schemaName, final String tableName) {
         StringBuilder result = new StringBuilder();
         if (TypedSPILoader.getService(DatabaseType.class, getType()).isSchemaAvailable() && !Strings.isNullOrEmpty(schemaName)) {
-            result.append(quote(schemaName)).append(".");
+            result.append(quote(schemaName)).append('.');
         }
         result.append(quote(tableName));
         return result.toString();
@@ -179,7 +179,7 @@ public abstract class AbstractPipelineSQLBuilder implements PipelineSQLBuilder {
     private String buildWhereSQL(final Collection<Column> conditionColumns) {
         StringBuilder where = new StringBuilder();
         for (Column each : conditionColumns) {
-            where.append(String.format("%s = ? and ", quote(each.getName())));
+            where.append(String.format("%s = ? AND ", quote(each.getName())));
         }
         where.setLength(where.length() - 5);
         return where.toString();

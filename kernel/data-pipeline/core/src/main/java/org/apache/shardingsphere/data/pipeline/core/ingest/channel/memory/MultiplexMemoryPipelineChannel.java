@@ -27,6 +27,7 @@ import org.apache.shardingsphere.data.pipeline.api.ingest.record.Record;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,7 +58,7 @@ public final class MultiplexMemoryPipelineChannel implements PipelineChannel {
         } else if (PlaceholderRecord.class.equals(record.getClass())) {
             pushRecord(record, 0);
         } else {
-            throw new RuntimeException("Not Support Record Type");
+            throw new UnsupportedOperationException("Unsupported record type: " + record.getClass().getName());
         }
     }
     
@@ -67,8 +68,8 @@ public final class MultiplexMemoryPipelineChannel implements PipelineChannel {
     }
     
     @Override
-    public List<Record> fetchRecords(final int batchSize, final int timeoutSeconds) {
-        return findChannel().fetchRecords(batchSize, timeoutSeconds);
+    public List<Record> fetchRecords(final int batchSize, final int timeout, final TimeUnit timeUnit) {
+        return findChannel().fetchRecords(batchSize, timeout, timeUnit);
     }
     
     @Override
