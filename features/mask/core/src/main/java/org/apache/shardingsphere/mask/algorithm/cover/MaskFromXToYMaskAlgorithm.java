@@ -18,9 +18,7 @@
 package org.apache.shardingsphere.mask.algorithm.cover;
 
 import com.google.common.base.Strings;
-import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.mask.algorithm.MaskAlgorithmPropsChecker;
-import org.apache.shardingsphere.mask.exception.algorithm.MaskAlgorithmInitializationException;
 import org.apache.shardingsphere.mask.spi.MaskAlgorithm;
 
 import java.util.Properties;
@@ -51,17 +49,12 @@ public final class MaskFromXToYMaskAlgorithm implements MaskAlgorithm<Object, St
     
     private Integer createFromX(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FROM_X, getType());
-        return fromX;
+        return Integer.valueOf(props.getProperty(FROM_X));
     }
     
     private Integer createToY(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, TO_Y, getType());
-        String toYValue = props.getProperty(TO_Y);
-        if (!Strings.isNullOrEmpty(toYValue)) {
-            toY = Integer.parseInt(toYValue);
-            ShardingSpherePreconditions.checkState(toY > 0, () -> new MaskAlgorithmInitializationException(getType(), "to-Y must be a positive integer."));
-        }
-        return toY;
+        return Integer.valueOf(props.getProperty(TO_Y));
     }
     
     private Character createReplaceChar(final Properties props) {

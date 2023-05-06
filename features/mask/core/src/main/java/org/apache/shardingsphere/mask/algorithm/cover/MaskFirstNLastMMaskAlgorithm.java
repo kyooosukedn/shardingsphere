@@ -49,12 +49,12 @@ public final class MaskFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
     
     private Integer createFirstN(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FIRST_N, getType());
-        return firstN;
+        return Integer.valueOf(props.getProperty(FIRST_N));
     }
     
     private Integer createLastM(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, LAST_M, getType());
-        return lastM;
+        return Integer.valueOf(props.getProperty(LAST_M));
     }
     
     private Character createReplaceChar(final Properties props) {
