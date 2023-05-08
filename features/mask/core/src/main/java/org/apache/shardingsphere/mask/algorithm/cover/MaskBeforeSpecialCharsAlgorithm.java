@@ -49,7 +49,6 @@ public final class MaskBeforeSpecialCharsAlgorithm implements MaskAlgorithm<Obje
     
     private Character createReplaceChar(final Properties props) {
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
-        MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
         return props.getProperty(REPLACE_CHAR).charAt(0);
     }
     
