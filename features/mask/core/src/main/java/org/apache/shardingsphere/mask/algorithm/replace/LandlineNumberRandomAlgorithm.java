@@ -44,7 +44,6 @@ public final class LandlineNumberRandomAlgorithm implements MaskAlgorithm<Object
     }
     
     private List<String> createLandLineNumbers(final Properties props) {
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, LANDLINE_NUMBERS, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, LANDLINE_NUMBERS, getType());
         return Splitter.on(",").trimResults().splitToList(props.getProperty(LANDLINE_NUMBERS));
     }

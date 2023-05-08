@@ -58,7 +58,6 @@ public final class KeepFirstNLastMMaskAlgorithm implements MaskAlgorithm<Object,
     }
     
     private Character createReplaceChar(final Properties props) {
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
         return props.getProperty(REPLACE_CHAR).charAt(0);
     }

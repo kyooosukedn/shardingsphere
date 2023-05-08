@@ -38,7 +38,6 @@ public final class PersonalIdentityNumberRandomReplaceAlgorithm implements MaskA
     
     @Override
     public void init(final Properties props) {
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, ALPHA_TWO_COUNTRY_AREA_CODE, getType());
         MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, ALPHA_TWO_COUNTRY_AREA_CODE, getType());
         alphaTwoCountryAreaCode = props.getProperty(ALPHA_TWO_COUNTRY_AREA_CODE, "CN");
     }

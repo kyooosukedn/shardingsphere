@@ -49,19 +49,17 @@ public final class KeepFromXToYMaskAlgorithm implements MaskAlgorithm<Object, St
     
     private Integer createFromX(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, FROM_X, getType());
-        return Integer.valueOf(props.getProperty(FROM_X));
+        return Integer.parseInt(props.getProperty(FROM_X));
     }
     
     private Integer createToY(final Properties props) {
         MaskAlgorithmPropsChecker.checkPositiveIntegerConfig(props, TO_Y, getType());
-        return Integer.valueOf(props.getProperty(TO_Y));
+        return Integer.parseInt(props.getProperty(TO_Y));
     }
     
     private Character createReplaceChar(final Properties props) {
-        String replaceCharStr = props.getProperty(REPLACE_CHAR);
-        MaskAlgorithmPropsChecker.checkRequiredPropertyConfig(props, REPLACE_CHAR, getType());
         MaskAlgorithmPropsChecker.checkSingleCharConfig(props, REPLACE_CHAR, getType());
-        return replaceCharStr.charAt(0);
+        return props.getProperty(REPLACE_CHAR).charAt(0);
     }
     
     @Override

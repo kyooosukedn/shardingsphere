@@ -65,19 +65,6 @@ public final class MaskAlgorithmPropsChecker {
      * Check required property config.
      *
      * @param props props
-     * @param requiredPropertyConfigKey required property config key
-     * @param maskType mask type
-     * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
-     */
-    public static void checkRequiredPropertyConfig(final Properties props, final String requiredPropertyConfigKey, final String maskType) {
-        ShardingSpherePreconditions.checkState(props.containsKey(requiredPropertyConfigKey),
-                () -> new MaskAlgorithmInitializationException(maskType, String.format("%s is required", requiredPropertyConfigKey)));
-    }
-    
-    /**
-     * Check required property config.
-     *
-     * @param props props
      * @param positiveIntegerTypeConfigKey positive integer type config key
      * @param maskType mask type
      * @throws MaskAlgorithmInitializationException mask algorithm initialization exception
@@ -85,13 +72,11 @@ public final class MaskAlgorithmPropsChecker {
     public static void checkPositiveIntegerConfig(final Properties props, final String positiveIntegerTypeConfigKey, final String maskType) {
         ShardingSpherePreconditions.checkState(props.containsKey(positiveIntegerTypeConfigKey),
                 () -> new MaskAlgorithmInitializationException(maskType, String.format("%s can not be null", positiveIntegerTypeConfigKey)));
-        
         try {
             Integer.parseInt(props.getProperty(positiveIntegerTypeConfigKey));
         } catch (final NumberFormatException ex) {
             throw new MaskAlgorithmInitializationException(maskType, String.format("%s must be a valid integer number", positiveIntegerTypeConfigKey));
         }
-        
         if (!Strings.isNullOrEmpty(positiveIntegerTypeConfigKey)) {
             int integerValue = Integer.parseInt(props.getProperty(positiveIntegerTypeConfigKey));
             ShardingSpherePreconditions.checkState(integerValue > 0,
