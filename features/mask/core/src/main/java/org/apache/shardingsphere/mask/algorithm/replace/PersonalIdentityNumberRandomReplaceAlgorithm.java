@@ -18,7 +18,8 @@
 package org.apache.shardingsphere.mask.algorithm.replace;
 
 import com.google.common.base.Strings;
-import org.apache.shardingsphere.mask.algorithm.MaskAlgorithmPropsChecker;
+import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
+import org.apache.shardingsphere.mask.exception.algorithm.MaskAlgorithmInitializationException;
 import org.apache.shardingsphere.mask.spi.MaskAlgorithm;
 
 import java.security.SecureRandom;
@@ -38,7 +39,8 @@ public final class PersonalIdentityNumberRandomReplaceAlgorithm implements MaskA
     
     @Override
     public void init(final Properties props) {
-        MaskAlgorithmPropsChecker.checkAtLeastOneCharConfig(props, ALPHA_TWO_COUNTRY_AREA_CODE, getType());
+        ShardingSpherePreconditions.checkState(props.containsKey(ALPHA_TWO_COUNTRY_AREA_CODE),
+                () -> new MaskAlgorithmInitializationException(getType(), String.format("%s can not be null", ALPHA_TWO_COUNTRY_AREA_CODE)));
         alphaTwoCountryAreaCode = props.getProperty(ALPHA_TWO_COUNTRY_AREA_CODE, "CN");
     }
     
