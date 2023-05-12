@@ -36,12 +36,12 @@ public final class PersonalIdentityNumberRandomReplaceAlgorithm implements MaskA
     private final Random random = new SecureRandom();
     
     private String alphaTwoCountryAreaCode;
-    
+
     @Override
     public void init(final Properties props) {
-        ShardingSpherePreconditions.checkState(props.containsKey(ALPHA_TWO_COUNTRY_AREA_CODE),
-                () -> new MaskAlgorithmInitializationException(getType(), String.format("%s can not be null", ALPHA_TWO_COUNTRY_AREA_CODE)));
         alphaTwoCountryAreaCode = props.getProperty(ALPHA_TWO_COUNTRY_AREA_CODE, "CN");
+        ShardingSpherePreconditions.checkState(!Strings.isNullOrEmpty(alphaTwoCountryAreaCode),
+                () -> new MaskAlgorithmInitializationException(getType(), String.format("%s can not be empty", ALPHA_TWO_COUNTRY_AREA_CODE)));
     }
     
     @Override
