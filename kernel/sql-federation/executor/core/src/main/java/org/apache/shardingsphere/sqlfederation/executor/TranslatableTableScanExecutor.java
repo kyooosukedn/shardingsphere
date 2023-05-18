@@ -254,7 +254,7 @@ public final class TranslatableTableScanExecutor implements TableScanExecutor {
     }
     
     private List<QueryResult> execute(final ExecutionGroupContext<JDBCExecutionUnit> executionGroupContext, final DatabaseType databaseType) throws SQLException {
-        Collection<QueryResult> queryResults = jdbcExecutor.execute(executionGroupContext, callback).stream().map(each -> (QueryResult) each).collect(Collectors.toList());
+        Collection<QueryResult> queryResults = jdbcExecutor.execute(executionGroupContext, callback).stream().map(QueryResult.class::cast).collect(Collectors.toList());
         List<QueryResult> result = new LinkedList<>();
         for (QueryResult each : queryResults) {
             QueryResult queryResult = each instanceof JDBCStreamQueryResult
@@ -398,7 +398,7 @@ public final class TranslatableTableScanExecutor implements TableScanExecutor {
                 optimizerContext.getSqlParserRule().getSqlStatementCache(), optimizerContext.getSqlParserRule().getParseTreeCache(),
                 optimizerContext.getSqlParserRule().isSqlCommentParseEnabled()).parse(sql, useCache);
         List<Object> params = getParameters(sqlString.getDynamicParameters());
-        SQLStatementContext<?> sqlStatementContext = SQLStatementContextFactory.newInstance(metaData, params, sqlStatement, executorContext.getDatabaseName());
+        SQLStatementContext sqlStatementContext = SQLStatementContextFactory.newInstance(metaData, params, sqlStatement, executorContext.getDatabaseName());
         return new QueryContext(sqlStatementContext, sql, params, new HintValueContext(), useCache);
     }
     

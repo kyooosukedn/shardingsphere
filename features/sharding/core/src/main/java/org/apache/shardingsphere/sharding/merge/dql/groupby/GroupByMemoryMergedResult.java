@@ -17,7 +17,6 @@
 
 package org.apache.shardingsphere.sharding.merge.dql.groupby;
 
-import com.google.common.collect.Maps;
 import org.apache.shardingsphere.infra.binder.segment.select.projection.Projection;
 import org.apache.shardingsphere.infra.binder.segment.select.projection.impl.AggregationDistinctProjection;
 import org.apache.shardingsphere.infra.binder.segment.select.projection.impl.AggregationProjection;
@@ -46,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Memory merged result for group by.
@@ -58,7 +59,7 @@ public final class GroupByMemoryMergedResult extends MemoryMergedResult<Sharding
     
     @Override
     protected List<MemoryQueryResultRow> init(final ShardingRule shardingRule, final ShardingSphereSchema schema,
-                                              final SQLStatementContext<?> sqlStatementContext, final List<QueryResult> queryResults) throws SQLException {
+                                              final SQLStatementContext sqlStatementContext, final List<QueryResult> queryResults) throws SQLException {
         SelectStatementContext selectStatementContext = (SelectStatementContext) sqlStatementContext;
         Map<GroupByValue, MemoryQueryResultRow> dataMap = new HashMap<>(1024);
         Map<GroupByValue, Map<AggregationProjection, AggregationUnit>> aggregationMap = new HashMap<>(1024);
@@ -80,12 +81,8 @@ public final class GroupByMemoryMergedResult extends MemoryMergedResult<Sharding
         if (!dataMap.containsKey(groupByValue)) {
             dataMap.put(groupByValue, new MemoryQueryResultRow(queryResult));
         }
-        if (!aggregationMap.containsKey(groupByValue)) {
-            Map<AggregationProjection, AggregationUnit> map = Maps
-                    .toMap(selectStatementContext.getProjectionsContext()
-                            .getAggregationProjections(), input -> AggregationUnitFactory.create(input.getType(), input instanceof AggregationDistinctProjection));
-            aggregationMap.put(groupByValue, map);
-        }
+        aggregationMap.computeIfAbsent(groupByValue, unused -> selectStatementContext.getProjectionsContext().getAggregationProjections().stream()
+                .collect(Collectors.toMap(Function.identity(), input -> AggregationUnitFactory.create(input.getType(), input instanceof AggregationDistinctProjection))));
     }
     
     private void aggregate(final SelectStatementContext selectStatementContext, final QueryResult queryResult,

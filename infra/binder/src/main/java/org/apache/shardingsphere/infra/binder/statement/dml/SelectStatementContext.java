@@ -83,7 +83,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Setter
-public final class SelectStatementContext extends CommonSQLStatementContext<SelectStatement> implements TableAvailable, WhereAvailable, ParameterAware {
+public final class SelectStatementContext extends CommonSQLStatementContext implements TableAvailable, WhereAvailable, ParameterAware {
     
     private final TablesContext tablesContext;
     
@@ -209,7 +209,7 @@ public final class SelectStatementContext extends CommonSQLStatementContext<Sele
      * @return whether contains partial distinct aggregation
      */
     public boolean isContainsPartialDistinctAggregation() {
-        Collection<Projection> aggregationProjections = projectionsContext.getProjections().stream().filter(each -> each instanceof AggregationProjection).collect(Collectors.toList());
+        Collection<Projection> aggregationProjections = projectionsContext.getProjections().stream().filter(AggregationProjection.class::isInstance).collect(Collectors.toList());
         Collection<AggregationDistinctProjection> aggregationDistinctProjections = projectionsContext.getAggregationDistinctProjections();
         return aggregationProjections.size() > 1 && !aggregationDistinctProjections.isEmpty() && aggregationProjections.size() != aggregationDistinctProjections.size();
     }
@@ -296,6 +296,11 @@ public final class SelectStatementContext extends CommonSQLStatementContext<Sele
      */
     public boolean isSameGroupByAndOrderByItems() {
         return !groupByContext.getItems().isEmpty() && groupByContext.getItems().equals(orderByContext.getItems());
+    }
+    
+    @Override
+    public SelectStatement getSqlStatement() {
+        return (SelectStatement) super.getSqlStatement();
     }
     
     @Override

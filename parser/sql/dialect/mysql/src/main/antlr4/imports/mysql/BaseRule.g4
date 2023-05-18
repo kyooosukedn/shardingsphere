@@ -567,11 +567,15 @@ identifierKeywordsAmbiguous4SystemVariables
     | PERSIST_ONLY
     | SESSION
     ;
-    
+
 textOrIdentifier
-    : identifier | string_
+    : identifier | string_ | ipAddress
     ;
-    
+
+ipAddress
+    : IP_ADDRESS
+    ;
+
 variable
     : userVariable | systemVariable
     ;
@@ -1009,7 +1013,7 @@ repairType
     ;
     
 castFunction
-    : CAST LP_ expr AS dataType RP_
+    : CAST LP_ expr AS castType ARRAY? RP_
     | CAST LP_ expr AT TIME ZONE expr AS DATETIME typeDatetimePrecision? RP_
     ;
 
@@ -1019,23 +1023,19 @@ convertFunction
     ;
     
 castType
-    : BINARY fieldLength?
-    | CHAR fieldLength? charsetWithOptBinary?
-    | nchar fieldLength?
-    | SIGNED INT?
-    | UNSIGNED INT?
-    | DATE
-    | TIME typeDatetimePrecision?
-    | DATETIME typeDatetimePrecision?
-    | DECIMAL (fieldLength | precision)?
-    | JSON
-    | REAL
-    | DOUBLE PRECISION
-    | FLOAT precision?
-    ;
-    
-nchar
-    : NCHAR | NATIONAL CHAR
+    : castTypeName = BINARY fieldLength?
+    | castTypeName = CHAR fieldLength? charsetWithOptBinary?
+    | (castTypeName = NCHAR | castTypeName = NATIONAL_CHAR) fieldLength?
+    | castTypeName = (SIGNED | SIGNED_INT | SIGNED_INTEGER)
+    | castTypeName = (UNSIGNED | UNSIGNED_INT | UNSIGNED_INTEGER)
+    | castTypeName = DATE
+    | castTypeName = TIME typeDatetimePrecision?
+    | castTypeName = DATETIME typeDatetimePrecision?
+    | castTypeName = DECIMAL (fieldLength | precision)?
+    | castTypeName = JSON
+    | castTypeName = REAL
+    | castTypeName = DOUBLE PRECISION
+    | castTypeName = FLOAT precision?
     ;
     
 positionFunction
@@ -1158,30 +1158,30 @@ dataType
     | dataTypeName = BIT fieldLength?
     | dataTypeName = (BOOL | BOOLEAN)
     | dataTypeName = CHAR fieldLength? charsetWithOptBinary?
-    | (dataTypeName = NCHAR | dataTypeName = NATIONAL CHAR) fieldLength? BINARY?
-    | dataTypeName = SIGNED (INTEGER | INT)?
+    | (dataTypeName = NCHAR | dataTypeName = NATIONAL_CHAR) fieldLength? BINARY?
+    | dataTypeName = (SIGNED | SIGNED_INT | SIGNED_INTEGER)
     | dataTypeName = BINARY fieldLength?
-    | (dataTypeName = CHAR VARYING | dataTypeName = VARCHAR) fieldLength charsetWithOptBinary?
-    | (dataTypeName = NATIONAL VARCHAR | dataTypeName = NVARCHAR | dataTypeName = NCHAR VARCHAR | dataTypeName = NATIONAL CHAR VARYING | dataTypeName = NCHAR VARYING) fieldLength BINARY?
+    | (dataTypeName = CHAR_VARYING | dataTypeName = CHARACTER_VARYING | dataTypeName = VARCHAR) fieldLength charsetWithOptBinary?
+    | (dataTypeName = NATIONAL VARCHAR | dataTypeName = NVARCHAR | dataTypeName = NCHAR VARCHAR | dataTypeName = NATIONAL_CHAR_VARYING | dataTypeName = NCHAR VARYING) fieldLength BINARY?
     | dataTypeName = VARBINARY fieldLength?
     | dataTypeName = YEAR fieldLength? fieldOptions?
     | dataTypeName = DATE
     | dataTypeName = TIME typeDatetimePrecision?
-    | dataTypeName = UNSIGNED (INTEGER | INT)?
+    | dataTypeName = (UNSIGNED | UNSIGNED_INT | UNSIGNED_INTEGER)
     | dataTypeName = TIMESTAMP typeDatetimePrecision?
     | dataTypeName = DATETIME typeDatetimePrecision?
     | dataTypeName = TINYBLOB
     | dataTypeName = BLOB fieldLength?
     | dataTypeName = (MEDIUMBLOB | LONGBLOB)
     | dataTypeName = LONG VARBINARY
-    | dataTypeName = LONG (CHAR VARYING | VARCHAR)? charsetWithOptBinary?
+    | dataTypeName = (LONG_CHAR_VARYING | LONG_VARCHAR)? charsetWithOptBinary?
     | dataTypeName = TINYTEXT charsetWithOptBinary?
     | dataTypeName = TEXT fieldLength? charsetWithOptBinary?
     | dataTypeName = MEDIUMTEXT charsetWithOptBinary?
     | dataTypeName = LONGTEXT charsetWithOptBinary?
     | dataTypeName = ENUM stringList charsetWithOptBinary?
     | dataTypeName = SET stringList charsetWithOptBinary?
-    | dataTypeName = (SERIAL | JSON | GEOMETRY | GEOMETRYCOLLECTION | POINT | MULTIPOINT | LINESTRING | MULTILINESTRING | POLYGON | MULTIPOLYGON)
+    | dataTypeName = (SERIAL | JSON | GEOMETRY | GEOMCOLLECTION | GEOMETRYCOLLECTION | POINT | MULTIPOINT | LINESTRING | MULTILINESTRING | POLYGON | MULTIPOLYGON)
     ;
     
 stringList

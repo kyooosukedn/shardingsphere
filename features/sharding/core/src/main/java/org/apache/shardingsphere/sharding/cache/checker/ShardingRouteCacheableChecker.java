@@ -82,7 +82,7 @@ public final class ShardingRouteCacheableChecker {
     }
     
     private ShardingRouteCacheableCheckResult load(final Key key) {
-        SQLStatementContext<?> sqlStatementContext = key.getSqlStatementContext();
+        SQLStatementContext sqlStatementContext = key.getSqlStatementContext();
         ShardingRouteCacheableCheckResult result;
         if (sqlStatementContext instanceof SelectStatementContext) {
             result = checkSelectCacheable((SelectStatementContext) sqlStatementContext, key.getParameters(), key.getDatabase());
@@ -118,11 +118,12 @@ public final class ShardingRouteCacheableChecker {
     
     private ShardingRouteCacheableCheckResult checkInsertCacheable(final InsertStatementContext statementContext, final List<Object> params, final ShardingSphereDatabase database) {
         Collection<String> tableNames = statementContext.getTablesContext().getTableNames();
-        boolean isShardingTable;
         if (1 != tableNames.size() || null != statementContext.getInsertSelectContext() || null != statementContext.getOnDuplicateKeyUpdateValueContext()
-                || statementContext.getGeneratedKeyContext().map(GeneratedKeyContext::isGenerated).orElse(false)
-                || (isShardingTable = shardingRule.isAllShardingTables(tableNames)) && containsNonCacheableShardingAlgorithm(tableNames)
-                || !isShardingTable && !shardingRule.isAllBroadcastTables(tableNames)) {
+                || statementContext.getGeneratedKeyContext().map(GeneratedKeyContext::isGenerated).orElse(false)) {
+            return new ShardingRouteCacheableCheckResult(false, Collections.emptyList());
+        }
+        boolean isShardingTable = shardingRule.isAllShardingTables(tableNames);
+        if (isShardingTable && containsNonCacheableShardingAlgorithm(tableNames) || !isShardingTable && !shardingRule.isAllBroadcastTables(tableNames)) {
             return new ShardingRouteCacheableCheckResult(false, Collections.emptyList());
         }
         Collection<InsertValuesSegment> values = statementContext.getSqlStatement().getValues();
@@ -143,11 +144,13 @@ public final class ShardingRouteCacheableChecker {
         return checkUpdateOrDeleteCacheable(statementContext, params, database);
     }
     
-    private ShardingRouteCacheableCheckResult checkUpdateOrDeleteCacheable(final SQLStatementContext<?> statementContext, final List<Object> params, final ShardingSphereDatabase database) {
+    private ShardingRouteCacheableCheckResult checkUpdateOrDeleteCacheable(final SQLStatementContext statementContext, final List<Object> params, final ShardingSphereDatabase database) {
         Collection<String> tableNames = statementContext.getTablesContext().getTableNames();
-        boolean isShardingTable;
-        if (1 != tableNames.size() || (isShardingTable = shardingRule.isAllShardingTables(tableNames)) && containsNonCacheableShardingAlgorithm(tableNames)
-                || !isShardingTable && !shardingRule.isAllBroadcastTables(tableNames)) {
+        if (1 != tableNames.size()) {
+            return new ShardingRouteCacheableCheckResult(false, Collections.emptyList());
+        }
+        boolean isShardingTable = shardingRule.isAllShardingTables(tableNames);
+        if (isShardingTable && containsNonCacheableShardingAlgorithm(tableNames) || !isShardingTable && !shardingRule.isAllBroadcastTables(tableNames)) {
             return new ShardingRouteCacheableCheckResult(false, Collections.emptyList());
         }
         List<ShardingCondition> shardingConditions = new WhereClauseShardingConditionEngine(database, shardingRule, timeServiceRule).createShardingConditions(statementContext, params);
@@ -218,11 +221,11 @@ public final class ShardingRouteCacheableChecker {
         
         private final String sql;
         
-        private final SQLStatementContext<?> sqlStatementContext;
+        private final SQLStatementContext sqlStatementContext;
         
         private final List<Object> parameters;
         
-        private Key(final ShardingSphereDatabase database, final String sql, final SQLStatementContext<?> sqlStatementContext, final List<Object> params) {
+        private Key(final ShardingSphereDatabase database, final String sql, final SQLStatementContext sqlStatementContext, final List<Object> params) {
             this.database = database;
             this.sql = sql;
             this.sqlStatementContext = sqlStatementContext;

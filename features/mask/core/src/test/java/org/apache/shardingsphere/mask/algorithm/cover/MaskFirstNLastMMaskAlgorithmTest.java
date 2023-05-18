@@ -84,11 +84,6 @@ class MaskFirstNLastMMaskAlgorithmTest {
     }
     
     @Test
-    void assertMaskWhenPlainValueIsEmpty() {
-        assertThat(maskAlgorithm.mask(""), is(""));
-    }
-    
-    @Test
     void assertInitWhenFirstNIsEmpty() {
         assertThrows(MaskAlgorithmInitializationException.class,
                 () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", ""), new Property("last-m", "5"), new Property("replace-char", "*"))));
@@ -104,17 +99,5 @@ class MaskFirstNLastMMaskAlgorithmTest {
     void assertInitWhenReplaceCharIsEmpty() {
         assertThrows(MaskAlgorithmInitializationException.class,
                 () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "3"), new Property("last-m", "5"), new Property("replace-char", ""))));
-    }
-    
-    @Test
-    void assertInitWhenFirstNIsNotPositive() {
-        assertThrows(MaskAlgorithmInitializationException.class,
-                () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "-3"), new Property("last-m", "5"), new Property("replace-char", "*"))));
-    }
-    
-    @Test
-    void assertInitWhenLastMIsNotPositive() {
-        assertThrows(MaskAlgorithmInitializationException.class,
-                () -> new MaskFirstNLastMMaskAlgorithm().init(PropertiesBuilder.build(new Property("first-n", "3"), new Property("last-m", "-5"), new Property("replace-char", "*"))));
     }
 }

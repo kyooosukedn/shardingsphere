@@ -15,4 +15,8 @@
 # limitations under the License.
 #
 
+<<<<<<<< HEAD:db-protocol/opengauss/src/main/resources/META-INF/services/org.apache.shardingsphere.db.protocol.constant.DatabaseProtocolDefaultVersionProvider
+org.apache.shardingsphere.db.protocol.opengauss.constant.OpenGaussProtocolDefaultVersionProvider
+========
 org.apache.shardingsphere.db.protocol.mysql.constant.MySQLProtocolDefaultVersionProvider
+>>>>>>>> apache/master:db-protocol/mysql/src/main/resources/META-INF/services/org.apache.shardingsphere.db.protocol.constant.DatabaseProtocolDefaultVersionProvider

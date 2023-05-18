@@ -111,7 +111,7 @@ public final class DataSourceImporter extends AbstractLifecycleExecutor implemen
     }
     
     private PipelineJobProgressUpdatedParameter flush(final DataSource dataSource, final List<Record> buffer) {
-        List<DataRecord> dataRecords = buffer.stream().filter(each -> each instanceof DataRecord).map(each -> (DataRecord) each).collect(Collectors.toList());
+        List<DataRecord> dataRecords = buffer.stream().filter(DataRecord.class::isInstance).map(DataRecord.class::cast).collect(Collectors.toList());
         if (dataRecords.isEmpty()) {
             return new PipelineJobProgressUpdatedParameter(0);
         }
@@ -235,11 +235,11 @@ public final class DataSourceImporter extends AbstractLifecycleExecutor implemen
         }
     }
     
-    private void executeUpdate(final Connection connection, final DataRecord record) throws SQLException {
-        Set<String> shardingColumns = importerConfig.getShardingColumns(record.getTableName());
-        List<Column> conditionColumns = RecordUtils.extractConditionColumns(record, shardingColumns);
-        List<Column> updatedColumns = pipelineSqlBuilder.extractUpdatedColumns(record);
-        String updateSql = pipelineSqlBuilder.buildUpdateSQL(getSchemaName(record.getTableName()), record, conditionColumns);
+    private void executeUpdate(final Connection connection, final DataRecord dataRecord) throws SQLException {
+        Set<String> shardingColumns = importerConfig.getShardingColumns(dataRecord.getTableName());
+        List<Column> conditionColumns = RecordUtils.extractConditionColumns(dataRecord, shardingColumns);
+        List<Column> updatedColumns = pipelineSqlBuilder.extractUpdatedColumns(dataRecord);
+        String updateSql = pipelineSqlBuilder.buildUpdateSQL(getSchemaName(dataRecord.getTableName()), dataRecord, conditionColumns);
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateSql)) {
             updateStatement.set(preparedStatement);
             for (int i = 0; i < updatedColumns.size(); i++) {
@@ -295,16 +295,20 @@ public final class DataSourceImporter extends AbstractLifecycleExecutor implemen
             return;
         }
         try (Connection connection = dataSource.getConnection()) {
-            // TODO it's better use transaction, but execute delete maybe not effect when open transaction of PostgreSQL sometimes
-            for (DataRecord each : buffer) {
-                try {
-                    doFlush(connection, each);
-                } catch (final SQLException ex) {
-                    throw new PipelineImporterJobWriteException(String.format("Write failed, record=%s", each), ex);
-                }
-            }
+            sequentialFlush(connection, buffer);
         } catch (final SQLException ex) {
             throw new PipelineImporterJobWriteException(ex);
+        }
+    }
+    
+    private void sequentialFlush(final Connection connection, final List<DataRecord> buffer) {
+        // TODO it's better use transaction, but execute delete maybe not effect when open transaction of PostgreSQL sometimes
+        for (DataRecord each : buffer) {
+            try {
+                doFlush(connection, each);
+            } catch (final SQLException ex) {
+                throw new PipelineImporterJobWriteException(String.format("Write failed, record=%s", each), ex);
+            }
         }
     }
     

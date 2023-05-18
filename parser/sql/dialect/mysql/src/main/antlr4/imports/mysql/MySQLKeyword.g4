@@ -243,8 +243,16 @@ CHAR
     : C H A R
     ;
 
+CHAR_VARYING
+    : CHAR ' ' VARYING
+    ;
+
 CHARACTER
     : C H A R A C T E R
+    ;
+
+CHARACTER_VARYING
+    : CHARACTER ' ' VARYING
     ;
 
 CHARSET
@@ -859,6 +867,10 @@ GEOMETRY
     : G E O M E T R Y
     ;
 
+GEOMCOLLECTION
+    : G E O M C O L L E C T I O N
+    ;
+
 GEOMETRYCOLLECTION
     : G E O M E T R Y C O L L E C T I O N
     ;
@@ -1259,6 +1271,14 @@ LONGTEXT
     : L O N G T E X T
     ;
 
+LONG_CHAR_VARYING
+    : LONG ' ' CHAR ' ' VARYING
+    ;
+
+LONG_VARCHAR
+    : LONG ' ' VARCHAR
+    ;
+
 LOOP
     : L O O P
     ;
@@ -1521,6 +1541,14 @@ NAMES
 
 NATIONAL
     : N A T I O N A L
+    ;
+
+NATIONAL_CHAR
+    : NATIONAL ' ' CHAR
+    ;
+
+NATIONAL_CHAR_VARYING
+    : NATIONAL ' ' CHAR_VARYING
     ;
 
 NATURAL
@@ -2259,6 +2287,14 @@ SIGNED
     : S I G N E D
     ;
 
+SIGNED_INT
+    : SIGNED ' ' INT
+    ;
+
+SIGNED_INTEGER
+    : SIGNED ' ' INTEGER
+    ;
+
 SIMPLE
     : S I M P L E
     ;
@@ -2665,6 +2701,14 @@ UNLOCK
 
 UNSIGNED
     : U N S I G N E D
+    ;
+
+UNSIGNED_INT
+    : UNSIGNED ' ' INT
+    ;
+
+UNSIGNED_INTEGER
+    : UNSIGNED ' ' INTEGER
     ;
 
 UNTIL

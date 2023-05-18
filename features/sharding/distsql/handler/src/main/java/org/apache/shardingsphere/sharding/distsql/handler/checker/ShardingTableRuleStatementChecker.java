@@ -296,12 +296,20 @@ public final class ShardingTableRuleStatementChecker {
     
     private static Optional<String> getAlgorithmExpression(final TableRule tableRule, final boolean databaseAlgorithm, final BindingTableCheckedConfiguration checkedConfig) {
         ShardingStrategyConfiguration shardingStrategyConfig = databaseAlgorithm
-                ? null == tableRule.getDatabaseShardingStrategyConfig() ? checkedConfig.getDefaultDatabaseShardingStrategyConfig() : tableRule.getDatabaseShardingStrategyConfig()
-                : null == tableRule.getTableShardingStrategyConfig() ? checkedConfig.getDefaultTableShardingStrategyConfig() : tableRule.getTableShardingStrategyConfig();
+                ? getDatabaseShardingStrategyConfiguration(tableRule, checkedConfig)
+                : getTableShardingStrategyConfiguration(tableRule, checkedConfig);
         ShardingAlgorithm shardingAlgorithm = checkedConfig.getShardingAlgorithms().get(shardingStrategyConfig.getShardingAlgorithmName());
         String dataNodePrefix = databaseAlgorithm ? tableRule.getDataSourceDataNode().getPrefix() : tableRule.getTableDataNode().getPrefix();
         String shardingColumn = getShardingColumn(shardingStrategyConfig, checkedConfig.getDefaultShardingColumn());
         return null == shardingAlgorithm ? Optional.empty() : shardingAlgorithm.getAlgorithmStructure(dataNodePrefix, shardingColumn);
+    }
+    
+    private static ShardingStrategyConfiguration getDatabaseShardingStrategyConfiguration(final TableRule tableRule, final BindingTableCheckedConfiguration checkedConfig) {
+        return null == tableRule.getDatabaseShardingStrategyConfig() ? checkedConfig.getDefaultDatabaseShardingStrategyConfig() : tableRule.getDatabaseShardingStrategyConfig();
+    }
+    
+    private static ShardingStrategyConfiguration getTableShardingStrategyConfiguration(final TableRule tableRule, final BindingTableCheckedConfiguration checkedConfig) {
+        return null == tableRule.getTableShardingStrategyConfig() ? checkedConfig.getDefaultTableShardingStrategyConfig() : tableRule.getTableShardingStrategyConfig();
     }
     
     private static String getShardingColumn(final ShardingStrategyConfiguration shardingStrategyConfig, final String defaultShardingColumn) {
@@ -411,7 +419,7 @@ public final class ShardingTableRuleStatementChecker {
     }
     
     private static void checkAutoTableRule(final Collection<AbstractTableRuleSegment> rules) {
-        Collection<AutoTableRuleSegment> autoTableRules = rules.stream().map(each -> (AutoTableRuleSegment) each).collect(Collectors.toList());
+        Collection<AutoTableRuleSegment> autoTableRules = rules.stream().map(AutoTableRuleSegment.class::cast).collect(Collectors.toList());
         Optional<AlgorithmSegment> anyAutoTableRule = autoTableRules.stream().map(AutoTableRuleSegment::getShardingAlgorithmSegment).filter(Objects::nonNull).findAny();
         if (anyAutoTableRule.isPresent()) {
             checkAutoTableShardingAlgorithms(autoTableRules);
@@ -430,7 +438,7 @@ public final class ShardingTableRuleStatementChecker {
     }
     
     private static void checkTableRule(final String databaseName, final Collection<AbstractTableRuleSegment> rules) {
-        Collection<TableRuleSegment> tableRules = rules.stream().map(each -> (TableRuleSegment) each).collect(Collectors.toList());
+        Collection<TableRuleSegment> tableRules = rules.stream().map(TableRuleSegment.class::cast).collect(Collectors.toList());
         Optional<ShardingStrategySegment> anyTableRule = tableRules.stream().map(each -> Arrays.asList(each.getDatabaseStrategySegment(), each.getTableStrategySegment()))
                 .flatMap(Collection::stream).filter(Objects::nonNull).findAny();
         if (anyTableRule.isPresent()) {
