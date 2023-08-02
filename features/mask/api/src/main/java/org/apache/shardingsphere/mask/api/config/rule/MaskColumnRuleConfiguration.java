@@ -19,12 +19,14 @@ package org.apache.shardingsphere.mask.api.config.rule;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Mask column rule configuration.
  */
 @RequiredArgsConstructor
 @Getter
+@Setter
 public final class MaskColumnRuleConfiguration {
     
     private final String logicColumn;

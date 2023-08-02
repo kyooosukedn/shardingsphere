@@ -19,6 +19,7 @@ package org.apache.shardingsphere.mask.api.config.rule;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.Collection;
 
@@ -27,9 +28,10 @@ import java.util.Collection;
  */
 @RequiredArgsConstructor
 @Getter
+@Setter
 public final class MaskTableRuleConfiguration {
     
-    private final String name;
+    private final String logicTable;
     
     private final Collection<MaskColumnRuleConfiguration> columns;
 }
